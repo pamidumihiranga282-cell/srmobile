@@ -42,4 +42,55 @@ body {
   }
 }
 
+/* Accent color mapping overrides to align with cellparts.lk blue (#0073fe) */
+.text-\[\#00b4d8\] {
+  color: var(--accent) !important;
+}
+.bg-\[\#00b4d8\] {
+  background-color: var(--accent) !important;
+}
+.border-\[\#00b4d8\] {
+  border-color: var(--accent) !important;
+}
+.bg-\[\#00b4d8\]\/15 {
+  background-color: rgba(0, 115, 254, 0.15) !important;
+}
+.bg-\[\#00b4d8\]\/20 {
+  background-color: rgba(0, 115, 254, 0.2) !important;
+}
+.bg-\[\#00b4d8\]\/40 {
+  background-color: rgba(0, 115, 254, 0.4) !important;
+}
+.border-\[\#00b4d8\]\/60 {
+  border-color: rgba(0, 115, 254, 0.6) !important;
+}
+.text-\[\#00b4d8\]\/70 {
+  color: rgba(0, 115, 254, 0.7) !important;
+}
+.shadow-cyan-500\/20 {
+  box-shadow: 0 10px 15px -3px rgba(0, 115, 254, 0.2), 0 4px 6px -4px rgba(0, 115, 254, 0.2) !important;
+}
+.focus\:ring-\[\#00b4d8\] {
+  --tw-ring-color: var(--accent) !important;
+}
+.focus\:ring-\[rgba\(0\,180\,216\,0\.55\)\] {
+  --tw-ring-color: rgba(0, 115, 254, 0.55) !important;
+}
+.focus\:ring-\[rgba\(0\,180\,216\,0\.25\)\] {
+  --tw-ring-color: rgba(0, 115, 254, 0.25) !important;
+}
+.focus\:border-\[rgba\(0\,180\,216\,0\.45\)\] {
+  border-color: rgba(0, 115, 254, 0.45) !important;
+}
+.text-cyan-400 {
+  color: var(--accent) !important;
+}
+.text-cyan-500 {
+  color: var(--accent) !important;
+}
+.bg-cyan-500 {
+  background-color: var(--accent) !important;
+}
+
+
 

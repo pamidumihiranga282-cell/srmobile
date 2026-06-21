@@ -86,17 +86,17 @@ export function HomePage(props: {
 
               <div className="relative z-10 flex h-full flex-col justify-end p-5 sm:p-8">
                 <div className="max-w-xl">
-                  <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-semibold text-white/80">
-                    <span className="h-2 w-2 rounded-full bg-[#00b4d8]" />
+                  <div className="inline-flex items-center gap-2 rounded-full border border-pure-white/10 bg-pure-white/5 px-3 py-1 text-xs font-semibold text-pure-white/80">
+                    <span className="h-2 w-2 rounded-full bg-[var(--accent)]" />
                     Sri Lanka • Island-wide delivery
                   </div>
-                  <h1 className="mt-4 font-[Poppins] text-2xl font-bold leading-tight text-white sm:text-4xl">
+                  <h1 className="mt-4 font-[Poppins] text-2xl font-bold leading-tight text-pure-white sm:text-4xl">
                     SR MOBILE
-                    <span className="block text-white/70 text-base sm:text-xl font-semibold mt-1">
+                    <span className="block text-pure-white/70 text-base sm:text-xl font-semibold mt-1">
                       {props.t("tagline")}
                     </span>
                   </h1>
-                  <p className="mt-3 text-sm text-white/70">
+                  <p className="mt-3 text-sm text-pure-white/70">
                     Premium parts, accessories, and repair tools—curated for popular phone models.
                   </p>
                   <div className="mt-5 flex flex-col gap-2 sm:flex-row">
@@ -115,7 +115,7 @@ export function HomePage(props: {
                     <button
                       key={i}
                       onClick={() => setIdx(i)}
-                      className={`h-2 w-7 rounded-full transition ${i === idx ? "bg-[#00b4d8]" : "bg-white/20 hover:bg-white/30"}`}
+                      className={`h-2 w-7 rounded-full transition ${i === idx ? "bg-[var(--accent)]" : "bg-pure-white/20 hover:bg-pure-white/30"}`}
                       aria-label={`Slide ${i + 1}`}
                     />
                   ))}
