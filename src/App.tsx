@@ -316,7 +316,7 @@ export default function App() {
       </div>
 
       <div className={show("account")}>
-        {profile ? <AccountGate profile={profile} products={products} wishlist={wishlist} setWishlist={setWishlist} /> : <NeedLogin />}
+        {profile ? <AccountGate profile={profile} products={products} wishlist={wishlist} setWishlist={setWishlist} settings={settings} /> : <NeedLogin />}
       </div>
 
       <div className={show("contact")}>
@@ -428,6 +428,7 @@ function AccountGate(props: {
   products: Product[];
   wishlist: string[];
   setWishlist: (ids: string[]) => void;
+  settings: SiteSettings;
 }) {
   const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -454,6 +455,7 @@ function AccountGate(props: {
       wishlist={props.wishlist}
       products={props.products}
       toggleWishlist={(id) => props.setWishlist(toggleWishlist(props.wishlist, id))}
+      adminPhone={props.settings.phone || "0726306039"}
     />
   );
 }

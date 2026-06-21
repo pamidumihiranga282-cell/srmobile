@@ -84,9 +84,9 @@ export function CheckoutPage(props: {
     setSubmitting(true);
     try {
       const orderPayload = {
-        userId: props.profile?.email ?? email,
+        userId: (props.profile?.email ?? email).toLowerCase(),
         userName: name,
-        email,
+        email: email.toLowerCase(),
         phone,
         items: props.cart.items.map((x) => ({
           productId: x.productId,

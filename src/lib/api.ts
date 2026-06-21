@@ -6,6 +6,7 @@ import {
   getDoc,
   getDocs,
   onSnapshot,
+  or,
   orderBy,
   query,
   runTransaction,
@@ -186,7 +187,16 @@ export async function createOrder(payload: Omit<Order, "id">) {
 }
 
 export function subscribeMyOrders(email: string, cb: (orders: Order[]) => void) {
-  const q = query(collection(db, "orders"), where("email", "==", email));
+  const lowerEmail = email.toLowerCase();
+  const q = query(
+    collection(db, "orders"),
+    or(
+      where("userId", "==", lowerEmail),
+      where("userId", "==", email),
+      where("email", "==", lowerEmail),
+      where("email", "==", email)
+    )
+  );
   return onSnapshot(
     q,
     (snap) => {
