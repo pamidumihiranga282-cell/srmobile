@@ -194,7 +194,6 @@ export function HomePage(props: {
 
         {/* Shop by model */}
         <div className="mt-10">
-          <div className="text-sm font-semibold text-white">Shop by Phone Model</div>
           <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
             {modelBrands.map((b) => (
               <button
