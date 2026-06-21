@@ -205,7 +205,6 @@ export function HomePage(props: {
                 className="rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-4 text-left hover:bg-white/[0.06]"
               >
                 <div className="text-sm font-semibold text-white">{b}</div>
-                <div className="text-xs text-white/50">Parts & accessories</div>
               </button>
             ))}
           </div>
