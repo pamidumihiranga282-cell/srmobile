@@ -4,11 +4,13 @@ import type { UserProfile } from "@/lib/firebase";
 import {
   createProduct,
   deleteMessage,
+  deleteOrder,
   deleteProduct,
   listMessages,
   listNewsletter,
   listUsers,
   subscribeAllOrders,
+  updateOrder,
   updateOrderStatus,
   updatePayHere,
   updateProduct,
@@ -115,6 +117,60 @@ export function AdminPage(props: {
   const [pCompat, setPCompat] = useState("");
   const [pFiles, setPFiles] = useState<File[]>([]);
   const [pImages, setPImages] = useState<string[]>([]);
+
+  // Order edit modal
+  const [orderOpen, setOrderOpen] = useState(false);
+  const [editingOrder, setEditingOrder] = useState<Order | null>(null);
+  const [oName, setOName] = useState("");
+  const [oEmail, setOEmail] = useState("");
+  const [oPhone, setOPhone] = useState("");
+  const [oAddress, setOAddress] = useState("");
+  const [oCity, setOCity] = useState("");
+  const [oZip, setOZip] = useState("");
+  const [oNotes, setONotes] = useState("");
+  const [oTotal, setOTotal] = useState("0");
+  const [oPaymentMethod, setOPaymentMethod] = useState<Order["paymentMethod"]>("Cash on Delivery");
+  const [oStatus, setOStatus] = useState<Order["status"]>("pending");
+  const [oTracking, setOTracking] = useState("");
+
+  function openEditOrder(o: Order) {
+    setEditingOrder(o);
+    setOName(o.userName ?? "");
+    setOEmail(o.email ?? "");
+    setOPhone(o.phone ?? "");
+    setOAddress(o.shippingAddress ?? "");
+    setOCity(o.city ?? "");
+    setOZip(o.zip ?? "");
+    setONotes(o.notes ?? "");
+    setOTotal(String(o.total ?? 0));
+    setOPaymentMethod(o.paymentMethod ?? "Cash on Delivery");
+    setOStatus(o.status ?? "pending");
+    setOTracking(o.trackingNumber ?? "");
+    setOrderOpen(true);
+  }
+
+  async function saveOrderDetails() {
+    if (!editingOrder) return;
+    try {
+      await updateOrder(editingOrder.id, {
+        userName: oName,
+        email: oEmail,
+        phone: oPhone,
+        shippingAddress: oAddress,
+        city: oCity,
+        zip: oZip,
+        notes: oNotes,
+        total: Number(oTotal),
+        paymentMethod: oPaymentMethod,
+        status: oStatus,
+        trackingNumber: oTracking,
+      });
+      toast.success("Order details updated successfully");
+      setOrderOpen(false);
+    } catch (e: any) {
+      toast.error(e?.message ?? "Failed to save order");
+    }
+  }
 
   function openNewProduct() {
     setEditing(null);
@@ -745,6 +801,107 @@ export function AdminPage(props: {
           </div>
         </div>
       </Modal>
+
+      <Modal open={orderOpen} onClose={() => setOrderOpen(false)} title="Edit Order Details">
+        <div className="grid gap-3">
+          {editingOrder && (
+            <div>
+              <div className="text-xs font-semibold text-white/70">Order ID</div>
+              <div className="mt-1 font-mono text-sm text-[#00b4d8] font-bold">{editingOrder.id}</div>
+            </div>
+          )}
+          <div>
+            <div className="text-xs font-semibold text-white/70">Customer Name *</div>
+            <Input value={oName} onChange={setOName} />
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <div className="text-xs font-semibold text-white/70">Email *</div>
+              <Input value={oEmail} onChange={setOEmail} />
+            </div>
+            <div>
+              <div className="text-xs font-semibold text-white/70">Phone *</div>
+              <Input value={oPhone} onChange={setOPhone} />
+            </div>
+          </div>
+          <div>
+            <div className="text-xs font-semibold text-white/70">Shipping Address *</div>
+            <Input value={oAddress} onChange={setOAddress} />
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <div className="text-xs font-semibold text-white/70">City *</div>
+              <Input value={oCity} onChange={setOCity} />
+            </div>
+            <div>
+              <div className="text-xs font-semibold text-white/70">ZIP Code</div>
+              <Input value={oZip} onChange={setOZip} />
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <div className="text-xs font-semibold text-white/70">Payment Method</div>
+              <Select
+                value={oPaymentMethod}
+                onChange={(v) => setOPaymentMethod(v as any)}
+                options={[
+                  { value: "Card", label: "Card" },
+                  { value: "Cash on Delivery", label: "Cash on Delivery" },
+                  { value: "Bank Transfer", label: "Bank Transfer" },
+                  { value: "PayHere", label: "PayHere" },
+                ]}
+              />
+            </div>
+            <div>
+              <div className="text-xs font-semibold text-white/70">Order Total (Rs.)</div>
+              <Input value={oTotal} onChange={setOTotal} />
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <div className="text-xs font-semibold text-white/70">Status</div>
+              <Select
+                value={oStatus}
+                onChange={(v) => setOStatus(v as any)}
+                options={[
+                  { value: "pending", label: "pending" },
+                  { value: "processing", label: "processing" },
+                  { value: "shipped", label: "shipped" },
+                  { value: "delivered", label: "delivered" },
+                ]}
+              />
+            </div>
+            <div>
+              <div className="text-xs font-semibold text-white/70">Tracking Number</div>
+              <Input value={oTracking} onChange={setOTracking} />
+            </div>
+          </div>
+          <div>
+            <div className="text-xs font-semibold text-white/70">Order Notes</div>
+            <Textarea value={oNotes} onChange={setONotes} rows={3} />
+          </div>
+          {editingOrder && (
+            <div>
+              <div className="text-xs font-semibold text-white/70">Ordered Items</div>
+              <div className="mt-1 max-h-[120px] overflow-y-auto rounded-xl border border-white/10 bg-white/[0.03] p-2 text-xs space-y-1">
+                {editingOrder.items.map((item, idx) => (
+                  <div key={idx} className="flex justify-between text-white/80">
+                    <span className="truncate pr-2">{item.qty}× {item.name}</span>
+                    <span className="shrink-0">Rs. {(item.qty * item.price).toLocaleString()}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <div className="flex justify-end gap-2 pt-2">
+            <Button variant="secondary" onClick={() => setOrderOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={saveOrderDetails}>Save Changes</Button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 
@@ -802,8 +959,25 @@ export function AdminPage(props: {
             <Button variant="secondary" onClick={() => wa(o.phone, `Hi ${o.userName}, your order ${o.id} is ${status}.`)}>
               WhatsApp
             </Button>
+            <Button variant="secondary" onClick={() => openEditOrder(o)}>
+              Edit
+            </Button>
             <Button onClick={save} disabled={saving}>
               {saving ? "Saving..." : "Save"}
+            </Button>
+            <Button
+              variant="danger"
+              onClick={async () => {
+                if (!confirm(`Are you sure you want to delete order ${o.id}?`)) return;
+                try {
+                  await deleteOrder(o.id);
+                  toast.success("Order deleted");
+                } catch (e: any) {
+                  toast.error(e?.message ?? "Failed to delete order");
+                }
+              }}
+            >
+              Delete
             </Button>
           </div>
         </td>

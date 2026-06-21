@@ -8,6 +8,7 @@ import {
   onSnapshot,
   orderBy,
   query,
+  runTransaction,
   serverTimestamp,
   setDoc,
   updateDoc,
@@ -157,11 +158,31 @@ export async function listNewsletter() {
 }
 
 export async function createOrder(payload: Omit<Order, "id">) {
-  const ref = await addDoc(collection(db, "orders"), {
-    ...payload,
-    orderDate: serverTimestamp(),
+  const counterRef = doc(db, "metadata", "counters");
+  
+  const orderId = await runTransaction(db, async (transaction) => {
+    const counterSnap = await transaction.get(counterRef);
+    let nextNum = 3445; // Start counter at 3445 to format like SR003445
+    if (counterSnap.exists()) {
+      const data = counterSnap.data();
+      nextNum = (data.orderCounter || 3444) + 1;
+      transaction.update(counterRef, { orderCounter: nextNum });
+    } else {
+      transaction.set(counterRef, { orderCounter: nextNum });
+    }
+    
+    const formattedId = `SR${String(nextNum).padStart(6, "0")}`;
+    const orderDocRef = doc(db, "orders", formattedId);
+    
+    transaction.set(orderDocRef, {
+      ...payload,
+      orderDate: serverTimestamp(),
+    });
+    
+    return formattedId;
   });
-  return ref.id;
+  
+  return orderId;
 }
 
 export function subscribeMyOrders(email: string, cb: (orders: Order[]) => void) {
@@ -185,6 +206,10 @@ export function subscribeAllOrders(cb: (orders: Order[]) => void) {
 export async function updateOrder(orderId: string, patch: Partial<Order>) {
   const { id: _ignore, ...rest } = patch as any;
   await updateDoc(doc(db, "orders", orderId), { ...rest, updatedAt: serverTimestamp() });
+}
+
+export async function deleteOrder(orderId: string) {
+  await deleteDoc(doc(db, "orders", orderId));
 }
 
 export async function findOrderByTracking(trackingNumber: string): Promise<Order | null> {

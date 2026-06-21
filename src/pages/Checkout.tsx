@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { CheckCircle2, MessageCircle, ShoppingBag } from "lucide-react";
 import type { CartState } from "@/lib/cart";
@@ -34,6 +34,7 @@ export function CheckoutPage(props: {
   settings: SiteSettings;
   payhere: PayHereSettings;
   profile: UserProfile | null;
+  view?: string;
 }) {
   const subtotal = cartSubtotal(props.cart);
   const discount = computeDiscount(props.cart);
@@ -55,6 +56,13 @@ export function CheckoutPage(props: {
 
   // Holds the confirmed order info for the success screen
   const [placed, setPlaced] = useState<Placed | null>(null);
+
+  // Reset the success screen state when navigating to checkout with items in the cart
+  useEffect(() => {
+    if (props.view === "checkout" && props.cart.items.length > 0) {
+      setPlaced(null);
+    }
+  }, [props.view, props.cart.items.length]);
 
   const itemsLabel = useMemo(() => {
     if (!props.cart.items.length) return "SR MOBILE Order";

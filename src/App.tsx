@@ -307,6 +307,7 @@ export default function App() {
           settings={settings}
           payhere={payhere}
           profile={profile}
+          view={view}
         />
       </div>
 
