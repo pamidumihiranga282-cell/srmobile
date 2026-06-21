@@ -231,7 +231,7 @@ export function ShopPage(props: {
                       <div className="absolute left-2 top-2 flex gap-2">
                         <button
                           className={`grid h-9 w-9 place-items-center rounded-xl border border-white/10 backdrop-blur transition ${
-                            inWishlist ? "bg-[#ff6b00] text-black" : "bg-black/40 text-white hover:bg-black/55"
+                            inWishlist ? "bg-[#ff6b00] text-black" : "bg-black/40 text-pure-white hover:bg-black/55"
                           }`}
                           onClick={() => props.toggleWishlist(p.id)}
                           aria-label="Wishlist"
@@ -239,7 +239,7 @@ export function ShopPage(props: {
                           <Heart className="h-4 w-4" />
                         </button>
                         <button
-                          className="grid h-9 w-9 place-items-center rounded-xl border border-white/10 bg-black/40 text-white backdrop-blur hover:bg-black/55"
+                          className="grid h-9 w-9 place-items-center rounded-xl border border-white/10 bg-black/40 text-pure-white backdrop-blur hover:bg-black/55"
                           onClick={() => setQuickId(p.id)}
                           aria-label="Quick view"
                         >

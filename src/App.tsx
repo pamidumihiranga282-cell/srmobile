@@ -194,9 +194,10 @@ export default function App() {
         position="top-right"
         toastOptions={{
           style: {
-            background: "#0b0b0b",
-            color: "#fff",
-            border: "1px solid rgba(255,255,255,0.12)",
+            background: "#ffffff",
+            color: "#111111",
+            border: "1px solid rgba(0,0,0,0.08)",
+            boxShadow: "0 4px 12px rgba(0,0,0,0.05)",
           },
         }}
       />
@@ -204,12 +205,12 @@ export default function App() {
       {/* Animated backdrop blobs */}
       <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
         <motion.div
-          className="absolute -left-24 -top-24 h-72 w-72 rounded-full bg-[#00b4d8]/20 blur-3xl"
+          className="absolute -left-24 -top-24 h-72 w-72 rounded-full bg-[#0073fe]/10 blur-3xl"
           animate={{ x: [0, 30, 0], y: [0, 20, 0] }}
           transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
         />
         <motion.div
-          className="absolute -right-20 top-24 h-80 w-80 rounded-full bg-[#ff6b00]/15 blur-3xl"
+          className="absolute -right-20 top-24 h-80 w-80 rounded-full bg-[#ff6b00]/8 blur-3xl"
           animate={{ x: [0, -40, 0], y: [0, 30, 0] }}
           transition={{ duration: 14, repeat: Infinity, ease: "easeInOut" }}
         />
@@ -360,7 +361,7 @@ export default function App() {
       </button>
 
       {/* Mobile bottom dock */}
-      <div className="fixed bottom-0 left-0 right-0 z-20 border-t border-white/10 bg-[#080808]/80 backdrop-blur sm:hidden">
+      <div className="fixed bottom-0 left-0 right-0 z-20 border-t border-white/10 bg-[var(--bg0)]/90 backdrop-blur sm:hidden">
         <div className="mx-auto grid max-w-lg grid-cols-5 px-2 py-2">
           <DockBtn active={view === "home"} label="Home" icon={<Home className="h-5 w-5" />} onClick={() => setView("home")} />
           <DockBtn active={view === "shop"} label="Shop" icon={<Search className="h-5 w-5" />} onClick={() => setView("shop")} />

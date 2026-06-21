@@ -29,14 +29,14 @@ export function Button(props: {
 }) {
   const variant = props.variant ?? "primary";
   const base =
-    "inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold transition focus:outline-none focus:ring-2 focus:ring-[rgba(0,180,216,0.55)] focus:ring-offset-2 focus:ring-offset-[#0b0b0b] disabled:opacity-50 disabled:pointer-events-none";
+    "inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold transition focus:outline-none focus:ring-2 focus:ring-[rgba(0,115,254,0.55)] focus:ring-offset-2 focus:ring-offset-[#ffffff] disabled:opacity-50 disabled:pointer-events-none";
   const styles =
     variant === "primary"
-      ? "bg-[linear-gradient(135deg,#00b4d8,#0077b6)] text-white shadow-lg shadow-cyan-500/10 hover:brightness-110"
+      ? "bg-[linear-gradient(135deg,#0073fe,#0056b3)] text-pure-white shadow-lg shadow-blue-500/10 hover:brightness-110"
       : variant === "secondary"
         ? "bg-white/10 text-white hover:bg-white/15"
         : variant === "danger"
-          ? "bg-[#ff2d2d]/90 text-white hover:bg-[#ff2d2d]"
+          ? "bg-[#ff2d2d]/90 text-pure-white hover:bg-[#ff2d2d]"
           : "bg-transparent text-white/90 hover:bg-white/10";
 
   return (
@@ -65,7 +65,7 @@ export function Input(props: {
       onChange={(e) => props.onChange(e.target.value)}
       placeholder={props.placeholder}
       className={cn(
-        "w-full rounded-xl border border-white/10 bg-white/[0.05] px-3 py-2 text-sm text-white placeholder:text-white/40 outline-none focus:border-[rgba(0,180,216,0.45)] focus:ring-2 focus:ring-[rgba(0,180,216,0.25)]",
+        "w-full rounded-xl border border-white/10 bg-white/[0.05] px-3 py-2 text-sm text-white placeholder:text-white/40 outline-none focus:border-[rgba(0,115,254,0.45)] focus:ring-2 focus:ring-[rgba(0,115,254,0.25)]",
         props.className
       )}
     />
@@ -86,7 +86,7 @@ export function Textarea(props: {
       placeholder={props.placeholder}
       rows={props.rows ?? 4}
       className={cn(
-        "w-full resize-none rounded-xl border border-white/10 bg-white/[0.05] px-3 py-2 text-sm text-white placeholder:text-white/40 outline-none focus:border-[rgba(0,180,216,0.45)] focus:ring-2 focus:ring-[rgba(0,180,216,0.25)]",
+        "w-full resize-none rounded-xl border border-white/10 bg-white/[0.05] px-3 py-2 text-sm text-white placeholder:text-white/40 outline-none focus:border-[rgba(0,115,254,0.45)] focus:ring-2 focus:ring-[rgba(0,115,254,0.25)]",
         props.className
       )}
     />
@@ -104,12 +104,12 @@ export function Select(props: {
       value={props.value}
       onChange={(e) => props.onChange(e.target.value)}
       className={cn(
-        "w-full rounded-xl border border-white/10 bg-[#0f0f0f] px-3 py-2 text-sm text-white outline-none focus:border-[rgba(0,180,216,0.45)] focus:ring-2 focus:ring-[rgba(0,180,216,0.25)]",
+        "w-full rounded-xl border border-white/10 bg-[#ffffff] px-3 py-2 text-sm text-white outline-none focus:border-[rgba(0,115,254,0.45)] focus:ring-2 focus:ring-[rgba(0,115,254,0.25)]",
         props.className
       )}
     >
       {props.options.map((o) => (
-        <option key={o.value} value={o.value} className="bg-[#0f0f0f]">
+        <option key={o.value} value={o.value} className="bg-[#ffffff]">
           {o.label}
         </option>
       ))}
@@ -156,7 +156,7 @@ export function Modal(props: {
           >
             <div
               className={cn(
-                "w-full max-w-xl overflow-hidden rounded-2xl border border-white/10 bg-[#0b0b0b] shadow-2xl flex flex-col max-h-[90vh]",
+                "w-full max-w-xl overflow-hidden rounded-2xl border border-white/10 bg-[var(--bg-card)] shadow-2xl flex flex-col max-h-[90vh]",
                 props.className
               )}
               onClick={(e) => e.stopPropagation()}
@@ -197,7 +197,7 @@ export function Drawer(props: {
             onClick={props.onClose}
           />
           <motion.div
-            className="fixed inset-y-0 right-0 z-50 w-full max-w-md overflow-hidden border-l border-white/10 bg-[#0b0b0b] shadow-2xl"
+            className="fixed inset-y-0 right-0 z-50 w-full max-w-md overflow-hidden border-l border-white/10 bg-[var(--bg-card)] shadow-2xl"
             initial={{ x: 400 }}
             animate={{ x: 0 }}
             exit={{ x: 400 }}

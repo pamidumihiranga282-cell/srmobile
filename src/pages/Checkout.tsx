@@ -223,7 +223,7 @@ export function CheckoutPage(props: {
                 Tap below to send your order details to SR MOBILE on WhatsApp for a quick confirmation.
               </p>
               <Button
-                className="w-full gap-2 bg-[#25D366] hover:brightness-110 text-white"
+                className="w-full gap-2 bg-[#25D366] hover:brightness-110 text-pure-white"
                 onClick={() => window.open(`https://wa.me/${adminPhone}?text=${waText}`, "_blank")}
               >
                 <MessageCircle className="h-5 w-5" />

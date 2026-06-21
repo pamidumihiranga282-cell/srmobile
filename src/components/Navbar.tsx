@@ -52,7 +52,7 @@ export function Navbar(props: {
   );
 
   return (
-    <div className="sticky top-0 z-30 border-b border-white/10 bg-[#080808]/70 backdrop-blur">
+    <div className="sticky top-0 z-30 border-b border-white/10 bg-[var(--bg0)]/80 backdrop-blur">
       <Container className="py-3">
         <div className="flex items-center gap-3">
           <motion.button
@@ -64,7 +64,7 @@ export function Navbar(props: {
             <img
               src={logoSrc}
               alt="SR Mobile Logo"
-              className="h-10 w-10 sm:h-12 sm:w-12 rounded-xl object-contain drop-shadow-[0_0_8px_rgba(0,180,216,0.5)] transition group-hover:drop-shadow-[0_0_12px_rgba(0,180,216,0.75)]"
+              className="h-10 w-10 sm:h-12 sm:w-12 rounded-xl object-contain drop-shadow-[0_0_8px_rgba(0,115,254,0.3)] transition group-hover:drop-shadow-[0_0_12px_rgba(0,115,254,0.5)]"
             />
             <div className="hidden sm:block text-left">
               <div className="font-[Poppins] text-sm font-bold tracking-wide text-white">SR MOBILE</div>
