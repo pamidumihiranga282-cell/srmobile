@@ -56,6 +56,16 @@ export function ProductDetailPage(props: {
   }, [p.id]);
 
   useEffect(() => {
+    if (p.images && p.images.length > 0) {
+      if (!img || !p.images.includes(img)) {
+        setImg(p.images[0]);
+      }
+    } else {
+      setImg("");
+    }
+  }, [p.images]);
+
+  useEffect(() => {
     const q = query(collection(db, "products", p.id, "reviews"), orderBy("date", "desc"));
     return onSnapshot(q, (snap) => {
       const arr: Review[] = [];

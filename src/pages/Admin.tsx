@@ -94,6 +94,7 @@ export function AdminPage(props: {
   const [pSpecs, setPSpecs] = useState("");
   const [pCompat, setPCompat] = useState("");
   const [pFiles, setPFiles] = useState<File[]>([]);
+  const [pImages, setPImages] = useState<string[]>([]);
 
   function openNewProduct() {
     setEditing(null);
@@ -106,6 +107,7 @@ export function AdminPage(props: {
     setPDesc("");
     setPSpecs("");
     setPCompat("");
+    setPImages([]);
     setPFiles([]);
     setProductOpen(true);
   }
@@ -121,6 +123,7 @@ export function AdminPage(props: {
     setPDesc(p.description);
     setPSpecs(p.specs);
     setPCompat((p.compatibility ?? []).join(", "));
+    setPImages(p.images ?? []);
     setPFiles([]);
     setProductOpen(true);
   }
@@ -135,7 +138,7 @@ export function AdminPage(props: {
         partType: pPartType.trim(),
         price: Number(pPrice || 0),
         stock: Number(pStock || 0),
-        images: editing?.images ?? [],
+        images: pImages,
         description: pDesc,
         specs: pSpecs,
         compatibility: pCompat
@@ -154,7 +157,7 @@ export function AdminPage(props: {
 
       if (pFiles.length) {
         const urls = await uploadProductImages(productId, pFiles);
-        const merged = [...(editing?.images ?? payload.images ?? []), ...urls];
+        const merged = [...pImages, ...urls];
         await updateProduct(productId, { images: merged } as any);
       }
 
@@ -633,6 +636,26 @@ export function AdminPage(props: {
             <div className="text-xs font-semibold text-white/70">Specs</div>
             <Textarea value={pSpecs} onChange={setPSpecs} rows={4} />
           </div>
+          {pImages.length > 0 && (
+            <div>
+              <div className="text-xs font-semibold text-white/70">Current Images</div>
+              <div className="mt-2 flex flex-wrap gap-2">
+                {pImages.map((url, idx) => (
+                  <div key={url} className="relative h-16 w-16 overflow-hidden rounded-xl border border-white/10 bg-white/5">
+                    <img src={url} alt="product" className="h-full w-full object-cover" />
+                    <button
+                      type="button"
+                      onClick={() => setPImages((prev) => prev.filter((_, i) => i !== idx))}
+                      className="absolute right-1 top-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white hover:bg-red-600 transition"
+                      title="Remove image"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
           <div>
             <div className="text-xs font-semibold text-white/70">Images (upload to Firebase Storage)</div>
             <input
