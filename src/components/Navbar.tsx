@@ -51,17 +51,17 @@ export function Navbar(props: {
             className="flex items-center gap-1.5 focus:outline-none"
             aria-label="Toggle menu"
           >
-            <Menu className="h-6 w-6 text-white" />
-            <span className="text-xs font-black uppercase tracking-wider text-white">MENU</span>
+            <Menu className="h-6 w-6 text-pure-white" />
+            <span className="text-xs font-black uppercase tracking-wider text-pure-white">MENU</span>
           </button>
 
           {/* Centered CELLTRONICS style logo */}
           <div className="flex items-center justify-center">
-            <span className="font-[Poppins] text-xl font-black italic tracking-wide text-white">
+            <span className="font-[Poppins] text-xl font-black italic tracking-wide text-pure-white">
               SR MOBILE
             </span>
             <div className="relative -top-1 ml-0.5">
-              <Wifi className="h-4 w-4 rotate-45 text-white animate-pulse" />
+              <Wifi className="h-4 w-4 rotate-45 text-pure-white animate-pulse" />
             </div>
           </div>
 
@@ -71,13 +71,13 @@ export function Navbar(props: {
             className="relative flex items-center justify-center focus:outline-none"
             aria-label="Open cart"
           >
-            <ShoppingCart className="h-6 w-6 text-white" />
+            <ShoppingCart className="h-6 w-6 text-pure-white" />
             {props.cartCount > 0 ? (
-              <span className="absolute -right-2.5 -top-2 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-white px-1 text-[10px] font-black text-[#0073fe] shadow-sm">
+              <span className="absolute -right-2.5 -top-2 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-pure-white px-1 text-[10px] font-black text-[#0073fe] shadow-sm">
                 {props.cartCount}
               </span>
             ) : (
-              <span className="absolute -right-2.5 -top-2 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-white/20 px-1 text-[10px] font-bold text-white">
+              <span className="absolute -right-2.5 -top-2 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-pure-white/20 px-1 text-[10px] font-bold text-pure-white">
                 0
               </span>
             )}
@@ -86,7 +86,7 @@ export function Navbar(props: {
       </div>
 
       {/* Mobile Search Input directly below blue header (Matches Celltronics screenshot) */}
-      <div className="bg-white border-b border-gray-100 py-3 px-4 sm:hidden">
+      <div className="bg-pure-white border-b border-gray-100 py-3 px-4 sm:hidden">
         <div className="relative">
           <input
             type="text"
@@ -96,7 +96,7 @@ export function Navbar(props: {
               if (props.view !== "shop") props.setView("shop");
             }}
             placeholder="Search for products"
-            className="w-full rounded-lg border border-gray-200 bg-white py-2.5 pl-4 pr-10 text-sm text-[#111111] placeholder:text-gray-400 focus:border-[#0073fe] focus:outline-none focus:ring-1 focus:ring-[#0073fe]"
+            className="w-full rounded-lg border border-gray-200 bg-pure-white py-2.5 pl-4 pr-10 text-sm text-[#111111] placeholder:text-gray-400 focus:border-[#0073fe] focus:outline-none focus:ring-1 focus:ring-[#0073fe]"
           />
           <div className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400">
             <Search className="h-5 w-5" />
@@ -217,7 +217,7 @@ export function Navbar(props: {
               animate={{ x: 0 }}
               exit={{ x: "-100%" }}
               transition={{ type: "spring", damping: 25, stiffness: 200 }}
-              className="relative flex w-4/5 max-w-sm flex-col bg-white p-5 text-[#111111] shadow-2xl h-full"
+              className="relative flex w-4/5 max-w-sm flex-col bg-pure-white p-5 text-[#111111] shadow-2xl h-full"
             >
               <div className="flex items-center justify-between border-b border-gray-100 pb-4 mb-4">
                 <span className="font-[Poppins] text-lg font-black italic tracking-wide text-[#0073fe]">
@@ -338,7 +338,7 @@ export function Navbar(props: {
                       props.onOpenAuth();
                       setMobileMenuOpen(false);
                     }}
-                    className="flex items-center justify-center gap-2 rounded-xl bg-[#0073fe] py-3 text-sm font-bold text-white hover:brightness-110 mt-4 shadow-sm"
+                    className="flex items-center justify-center gap-2 rounded-xl bg-[#0073fe] py-3 text-sm font-bold text-pure-white hover:brightness-110 mt-4 shadow-sm"
                   >
                     <LogIn className="h-4 w-4" />
                     Sign In / Register

@@ -75,7 +75,7 @@ export function HomePage(props: {
               props.onPreset({ partType: "Accessories" });
               props.onGoShop();
             }}
-            className="group relative overflow-hidden rounded-2xl bg-white shadow-sm border border-gray-100 aspect-[1.8/1] active:scale-[0.98] transition-transform"
+            className="group relative overflow-hidden rounded-2xl bg-pure-white shadow-sm border border-gray-100 aspect-[1.8/1] active:scale-[0.98] transition-transform"
           >
             <img
               src={watchBanner1}
@@ -88,7 +88,7 @@ export function HomePage(props: {
               props.onPreset({ partType: "Accessories" });
               props.onGoShop();
             }}
-            className="group relative overflow-hidden rounded-2xl bg-white shadow-sm border border-gray-100 aspect-[1.8/1] active:scale-[0.98] transition-transform"
+            className="group relative overflow-hidden rounded-2xl bg-pure-white shadow-sm border border-gray-100 aspect-[1.8/1] active:scale-[0.98] transition-transform"
           >
             <img
               src={watchBanner2}
@@ -117,7 +117,7 @@ export function HomePage(props: {
                   props.onPreset(c.preset);
                   props.onGoShop();
                 }}
-                className="group rounded-2xl border border-gray-100 bg-white p-4 text-left transition shadow-sm hover:border-[#0073fe]/30 hover:bg-gray-50/50"
+                className="group rounded-2xl border border-gray-100 bg-pure-white p-4 text-left transition shadow-sm hover:border-[#0073fe]/30 hover:bg-gray-50/50"
               >
                 <div className="flex items-center gap-3">
                   <div className="grid h-10 w-10 place-items-center rounded-2xl bg-gray-50 group-hover:bg-[#0073fe]/10">
@@ -147,7 +147,7 @@ export function HomePage(props: {
                 <div
                   key={p.id}
                   onClick={() => props.onOpenProduct(p.id)}
-                  className="group relative flex flex-col justify-between rounded-2xl border border-gray-100 bg-white p-3 text-left transition shadow-sm hover:border-gray-200/80 hover:shadow-md cursor-pointer"
+                  className="group relative flex flex-col justify-between rounded-2xl border border-gray-100 bg-pure-white p-3 text-left transition shadow-sm hover:border-gray-200/80 hover:shadow-md cursor-pointer"
                 >
                   <div className="relative aspect-square w-full overflow-hidden rounded-xl bg-gray-50/50">
                     {p.images?.[0] ? (
@@ -168,7 +168,7 @@ export function HomePage(props: {
                         props.toggleWishlist?.(p.id);
                       }}
                       className={cn(
-                        "absolute right-2 top-2 z-10 flex h-9 w-9 items-center justify-center rounded-full border bg-white shadow-sm transition hover:scale-105 active:scale-95",
+                        "absolute right-2 top-2 z-10 flex h-9 w-9 items-center justify-center rounded-full border bg-pure-white shadow-sm transition hover:scale-105 active:scale-95",
                         isWishlisted ? "border-[#0073fe]" : "border-gray-200"
                       )}
                     >
@@ -206,7 +206,7 @@ export function HomePage(props: {
           <div className="text-sm font-bold text-gray-800 uppercase tracking-wide">Testimonials</div>
           <div className="mt-4 grid gap-3 md:grid-cols-3">
             {testimonials.slice(0, 6).map((x, i) => (
-              <Card key={i} className="p-5 border border-gray-100 bg-white shadow-sm">
+              <Card key={i} className="p-5 border border-gray-100 bg-pure-white shadow-sm">
                 <div className="flex items-center justify-between gap-3">
                   <div className="text-sm font-bold text-gray-700">{x.name}</div>
                   <Stars value={x.rating} />
@@ -219,7 +219,7 @@ export function HomePage(props: {
 
         {/* Newsletter */}
         <div className="mt-12 px-4 sm:px-0">
-          <Card className="p-5 sm:p-7 border border-gray-100 bg-white shadow-sm">
+          <Card className="p-5 sm:p-7 border border-gray-100 bg-pure-white shadow-sm">
             <div className="grid gap-4 lg:grid-cols-[1fr_1fr]">
               <div>
                 <div className="font-[Poppins] text-lg font-bold text-gray-800">{props.t("newsletterTitle")}</div>

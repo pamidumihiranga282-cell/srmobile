@@ -408,7 +408,7 @@ export default function App() {
             icon={
               <div className="relative">
                 <ShoppingCart className="h-5.5 w-5.5" />
-                <span className="absolute -right-2 -top-1.5 flex h-4.5 min-w-[18px] items-center justify-center rounded-full bg-[#0073fe] px-1 text-[9px] font-black text-white">
+                <span className="absolute -right-2 -top-1.5 flex h-4.5 min-w-[18px] items-center justify-center rounded-full bg-[#0073fe] px-1 text-[9px] font-black text-pure-white">
                   {count}
                 </span>
               </div>
