@@ -186,12 +186,25 @@ export async function createOrder(payload: Omit<Order, "id">) {
 }
 
 export function subscribeMyOrders(email: string, cb: (orders: Order[]) => void) {
-  const q = query(collection(db, "orders"), where("email", "==", email), orderBy("orderDate", "desc"));
-  return onSnapshot(q, (snap) => {
-    const arr: Order[] = [];
-    snap.forEach((d) => arr.push({ id: d.id, ...(d.data() as any) }));
-    cb(arr);
-  });
+  const q = query(collection(db, "orders"), where("email", "==", email));
+  return onSnapshot(
+    q,
+    (snap) => {
+      const arr: Order[] = [];
+      snap.forEach((d) => arr.push({ id: d.id, ...(d.data() as any) }));
+      // Sort in memory by orderDate desc
+      arr.sort((a, b) => {
+        const tA = a.orderDate?.seconds ?? 0;
+        const tB = b.orderDate?.seconds ?? 0;
+        return tB - tA;
+      });
+      cb(arr);
+    },
+    (err) => {
+      console.error("subscribeMyOrders failed:", err);
+      cb([]);
+    }
+  );
 }
 
 export function subscribeAllOrders(cb: (orders: Order[]) => void) {
