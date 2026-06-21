@@ -231,6 +231,14 @@ export default function App() {
         setLang={setLang}
         t={t as any}
         rightSlot={authLoading ? <Spinner className="hidden md:flex" /> : null}
+        onPreset={(p) => {
+          setFilters((f) => ({
+            ...f,
+            brand: p.brand ?? "",
+            model: p.model ?? "",
+            partType: p.partType ?? "",
+          }));
+        }}
       />
 
       {/* PAGES (hidden divs) */}

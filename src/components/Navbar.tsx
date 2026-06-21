@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { LayoutDashboard, LogIn, LogOut, Search, ShoppingCart, User2, Menu, Wifi, X, Truck, Phone, Info } from "lucide-react";
+import { LayoutDashboard, LogIn, LogOut, Search, ShoppingCart, User2, Menu, Wifi, X, Truck, Phone, Smartphone, Cable, Wrench, Battery, ChevronRight } from "lucide-react";
 import { useState, type ReactNode } from "react";
 import { cn } from "@/utils/cn";
 import { Button, Container, Input } from "./ui";
@@ -21,6 +21,7 @@ export function Navbar(props: {
   setLang: (l: Lang) => void;
   t: (k: any) => string;
   rightSlot?: ReactNode;
+  onPreset?: (p: Partial<{ brand: string; model: string; partType: string }>) => void;
 }) {
   const isAdmin = props.profile?.role === "admin";
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -286,6 +287,33 @@ export function Navbar(props: {
                   <Phone className="h-4 w-4" />
                   Contact Support
                 </button>
+
+                {/* ── CATEGORIES ── */}
+                <div className="border-t border-gray-100 my-2 pt-2" />
+                <div className="px-4 pb-1 text-[10px] font-black uppercase tracking-widest text-gray-400">Shop by Category</div>
+                <div className="grid grid-cols-2 gap-2 px-1">
+                  {[
+                    { label: "iPhone Parts",   Icon: Smartphone, preset: { brand: "Apple" } },
+                    { label: "Samsung Parts",  Icon: Smartphone, preset: { brand: "Samsung" } },
+                    { label: "Accessories",    Icon: Cable,      preset: { partType: "Accessories" } },
+                    { label: "Repair Tools",   Icon: Wrench,     preset: { partType: "Repair Tools" } },
+                    { label: "Charging",       Icon: Battery,    preset: { partType: "Charging" } },
+                    { label: "All Products",   Icon: ChevronRight, preset: {} },
+                  ].map(({ label, Icon, preset }) => (
+                    <button
+                      key={label}
+                      onClick={() => {
+                        props.onPreset?.(preset);
+                        props.setView("shop");
+                        setMobileMenuOpen(false);
+                      }}
+                      className="flex items-center gap-2 rounded-xl border border-gray-100 bg-gray-50 px-3 py-2.5 text-left text-xs font-semibold text-gray-700 hover:border-[#0073fe]/30 hover:bg-[#0073fe]/5 hover:text-[#0073fe] transition active:scale-95"
+                    >
+                      <Icon className="h-4 w-4 shrink-0 text-gray-400" />
+                      {label}
+                    </button>
+                  ))}
+                </div>
 
                 <div className="border-t border-gray-100 my-2 pt-2" />
 
