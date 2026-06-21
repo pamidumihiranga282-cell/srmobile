@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Toaster } from "react-hot-toast";
 import toast from "react-hot-toast";
 import { motion } from "framer-motion";
-import { Home, Search, ShoppingCart, Truck, User2, Wrench } from "lucide-react";
+import { Home, Search, ShoppingCart, Truck, User2, Wrench, Heart } from "lucide-react";
 
 import { Navbar, type ViewKey } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
@@ -103,6 +103,7 @@ export default function App() {
 
   // Selected product (deep-link via hash query)
   const [selectedId, setSelectedId] = useState<string>("");
+  const [accountTab, setAccountTab] = useState<"orders" | "profile" | "wishlist">("orders");
 
   useEffect(() => {
     const q = getHashQuery();
@@ -254,6 +255,8 @@ export default function App() {
           setNewsletterEmail={setNewsletterEmail}
           onNewsletter={onNewsletter}
           t={t as any}
+          wishlist={wishlist}
+          toggleWishlist={(id) => setWishlist((prev) => toggleWishlist(prev, id))}
         />
       </div>
 
@@ -317,7 +320,19 @@ export default function App() {
       </div>
 
       <div className={show("account")}>
-        {profile ? <AccountGate profile={profile} products={products} wishlist={wishlist} setWishlist={setWishlist} settings={settings} /> : <NeedLogin />}
+        {profile ? (
+          <AccountGate
+            profile={profile}
+            products={products}
+            wishlist={wishlist}
+            setWishlist={setWishlist}
+            settings={settings}
+            tab={accountTab}
+            setTab={setAccountTab}
+          />
+        ) : (
+          <NeedLogin />
+        )}
       </div>
 
       <div className={show("contact")}>
@@ -352,26 +367,66 @@ export default function App() {
       {/* Global footer */}
       <Footer settings={settings} setView={setView} />
 
-      {/* Floating WhatsApp (mobile) */}
+      {/* Floating WhatsApp (mobile) with notification badge */}
       <button
-        className="fixed bottom-20 right-4 z-20 inline-flex h-12 items-center gap-2 rounded-2xl bg-[#00b4d8] px-4 text-sm font-black text-black shadow-xl shadow-cyan-500/20 sm:bottom-6"
+        className="fixed bottom-22 right-4 z-30 flex h-14 w-14 items-center justify-center rounded-full bg-[#25d366] text-white shadow-xl shadow-green-500/30 hover:scale-105 transition-transform focus:outline-none sm:bottom-6"
         onClick={() => window.open("https://wa.me/94726306039", "_blank")}
       >
-        WhatsApp
+        <svg viewBox="0 0 24 24" className="h-7.5 w-7.5 fill-current">
+          <path d="M12.012 2c-5.506 0-9.989 4.478-9.99 9.984a9.96 9.96 0 0 0 1.333 4.993L2 22l5.233-1.371a9.936 9.936 0 0 0 4.777 1.224h.005c5.505 0 9.99-4.478 9.991-9.986 0-2.67-1.037-5.178-2.923-7.065C17.198 2.915 14.69 2 12.012 2zm5.726 14.122c-.274.767-1.353 1.397-1.859 1.455-.466.053-.948.077-2.6-.59-2.227-.899-3.662-3.153-3.774-3.302-.112-.149-.912-1.21-1.01-2.28-.1-.1-.53-.59-.72-.9-.12-.2-.25-.39-.23-.62.03-.31.18-.46.28-.56.09-.1.2-.14.29-.14.1 0 .19.01.27.01.09 0 .2.02.31.25.12.27.42 1.02.46 1.1.04.08.06.18.01.28-.05.1-.1.21-.17.29-.07.08-.15.17-.22.25-.08.08-.16.18-.07.34.09.16.4 0.66.86 1.07.59.53 1.09.83 1.25.91.16.08.26.07.36-.05.1-.12.43-.5.55-.67.12-.17.24-.15.4-.09.16.06 1 .47 1.17.56.17.09.28.13.32.2.04.07.04.41-.09.78z" />
+        </svg>
+        <span className="absolute -top-1.5 -right-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-[#ff2d2d] text-[10px] font-black text-white ring-2 ring-white animate-bounce">
+          1
+        </span>
       </button>
 
-      {/* Mobile bottom dock */}
-      <div className="fixed bottom-0 left-0 right-0 z-20 border-t border-white/10 bg-[var(--bg0)]/90 backdrop-blur sm:hidden">
-        <div className="mx-auto grid max-w-lg grid-cols-5 px-2 py-2">
-          <DockBtn active={view === "home"} label="Home" icon={<Home className="h-5 w-5" />} onClick={() => setView("home")} />
-          <DockBtn active={view === "shop"} label="Shop" icon={<Search className="h-5 w-5" />} onClick={() => setView("shop")} />
-          <DockBtn active={view === "cart"} label="Cart" icon={<ShoppingCart className="h-5 w-5" />} onClick={() => setView("cart")} />
-          <DockBtn active={view === "track"} label="Track" icon={<Truck className="h-5 w-5" />} onClick={() => setView("track")} />
+      {/* Mobile bottom dock (Matches Celltronics screenshot) */}
+      <div className="fixed bottom-0 left-0 right-0 z-20 border-t border-gray-100 bg-[#ffffff] backdrop-blur sm:hidden shadow-[0_-4px_12px_rgba(0,0,0,0.03)]">
+        <div className="mx-auto grid max-w-lg grid-cols-4 px-2 py-1">
           <DockBtn
-            active={view === "account"}
-            label="Me"
-            icon={<User2 className="h-5 w-5" />}
-            onClick={() => (profile ? setView("account") : setAuthOpen(true))}
+            active={view === "shop" || view === "home"}
+            label="Shop"
+            icon={<Search className="h-5.5 w-5.5" />}
+            onClick={() => setView("shop")}
+          />
+          <DockBtn
+            active={view === "account" && accountTab === "wishlist"}
+            label="Wishlist"
+            icon={<Heart className="h-5.5 w-5.5" />}
+            onClick={() => {
+              if (profile) {
+                setAccountTab("wishlist");
+                setView("account");
+              } else {
+                setAuthOpen(true);
+              }
+            }}
+          />
+          <DockBtn
+            active={view === "cart"}
+            label="Cart"
+            icon={
+              <div className="relative">
+                <ShoppingCart className="h-5.5 w-5.5" />
+                <span className="absolute -right-2 -top-1.5 flex h-4.5 min-w-[18px] items-center justify-center rounded-full bg-[#0073fe] px-1 text-[9px] font-black text-white">
+                  {count}
+                </span>
+              </div>
+            }
+            onClick={() => setView("cart")}
+          />
+          <DockBtn
+            active={view === "account" && accountTab !== "wishlist"}
+            label="My account"
+            icon={<User2 className="h-5.5 w-5.5" />}
+            onClick={() => {
+              if (profile) {
+                setAccountTab("orders");
+                setView("account");
+              } else {
+                setAuthOpen(true);
+              }
+            }}
           />
         </div>
       </div>
@@ -430,6 +485,8 @@ function AccountGate(props: {
   wishlist: string[];
   setWishlist: (ids: string[]) => void;
   settings: SiteSettings;
+  tab: "orders" | "profile" | "wishlist";
+  setTab: (t: "orders" | "profile" | "wishlist") => void;
 }) {
   const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -457,6 +514,8 @@ function AccountGate(props: {
       products={props.products}
       toggleWishlist={(id) => props.setWishlist(toggleWishlist(props.wishlist, id))}
       adminPhone={props.settings.phone || "0726306039"}
+      tab={props.tab}
+      setTab={props.setTab}
     />
   );
 }

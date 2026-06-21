@@ -1,15 +1,14 @@
 import { AnimatePresence, motion } from "framer-motion";
-import { Wrench, Smartphone, Cable, ShieldCheck, Truck, RotateCcw, MessageCircle } from "lucide-react";
+import { Wrench, Smartphone, Cable, ShieldCheck, Truck, RotateCcw, MessageCircle, Heart } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import type { Product, SiteSettings, Testimonial } from "@/lib/types";
 import { Button, Card, Container, Input } from "@/components/ui";
 import { Stars } from "@/components/Stars";
+import { cn } from "@/utils/cn";
 
-const fallbackSlides = [
-  "https://images.pexels.com/photos/31862953/pexels-photo-31862953.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=627&w=1200",
-  "https://images.pexels.com/photos/31862950/pexels-photo-31862950.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=627&w=1200",
-  "https://images.pexels.com/photos/7194619/pexels-photo-7194619.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=627&w=1200",
-];
+import heroBanner from "@/assets/hero_banner.png";
+import watchBanner1 from "@/assets/watch_banner1.png";
+import watchBanner2 from "@/assets/watch_banner2.png";
 
 export function HomePage(props: {
   settings: SiteSettings;
@@ -23,18 +22,14 @@ export function HomePage(props: {
   setNewsletterEmail: (v: string) => void;
   onNewsletter: () => void;
   t: (k: any) => string;
+  wishlist?: string[];
+  toggleWishlist?: (id: string) => void;
 }) {
   const slides = useMemo(() => {
-    const hero = (props.settings.heroImage ?? "").trim();
-    return hero ? [hero, ...fallbackSlides] : fallbackSlides;
-  }, [props.settings.heroImage]);
+    return [heroBanner];
+  }, []);
 
   const [idx, setIdx] = useState(0);
-
-  useEffect(() => {
-    const t = setInterval(() => setIdx((x) => (x + 1) % slides.length), 4500);
-    return () => clearInterval(t);
-  }, [slides.length]);
 
   const featured = useMemo(() => {
     const ids = props.settings.featuredProductIds ?? [];
@@ -59,115 +54,58 @@ export function HomePage(props: {
     { label: "Charging", icon: Cable, preset: { partType: "Charging" } },
   ];
 
-  const modelBrands = ["Apple", "Samsung", "Google", "OnePlus", "Xiaomi", "Huawei", "Oppo", "Vivo"];
-
   return (
-    <div>
-      <Container>
-        {/* Hero */}
-        <div className="mt-6 grid gap-4 lg:grid-cols-[1.3fr_0.7fr]">
-          <Card className="relative overflow-hidden">
-            <div className="relative aspect-[16/10] w-full sm:aspect-[16/7]">
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={idx}
-                  className="absolute inset-0"
-                  initial={{ opacity: 0, scale: 1.03 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 1.02 }}
-                  transition={{ duration: 0.65 }}
-                  style={{
-                    backgroundImage: `linear-gradient(90deg, rgba(0,0,0,0.85), rgba(0,0,0,0.25)), url(${slides[idx]})`,
-                    backgroundSize: "cover",
-                    backgroundPosition: "center",
-                  }}
-                />
-              </AnimatePresence>
-
-              <div className="relative z-10 flex h-full flex-col justify-end p-5 sm:p-8">
-                <div className="max-w-xl">
-                  <div className="inline-flex items-center gap-2 rounded-full border border-pure-white/10 bg-pure-white/5 px-3 py-1 text-xs font-semibold text-pure-white/80">
-                    <span className="h-2 w-2 rounded-full bg-[var(--accent)]" />
-                    Sri Lanka • Island-wide delivery
-                  </div>
-                  <h1 className="mt-4 font-[Poppins] text-2xl font-bold leading-tight text-pure-white sm:text-4xl">
-                    SR MOBILE
-                    <span className="block text-pure-white/70 text-base sm:text-xl font-semibold mt-1">
-                      {props.t("tagline")}
-                    </span>
-                  </h1>
-                  <p className="mt-3 text-sm text-pure-white/70">
-                    Premium parts, accessories, and repair tools—curated for popular phone models.
-                  </p>
-                  <div className="mt-5 flex flex-col gap-2 sm:flex-row">
-                    <Button onClick={props.onGoShop}>Shop Now</Button>
-                    <Button
-                      variant="secondary"
-                      onClick={() => window.open("https://wa.me/94726306039", "_blank")}
-                    >
-                      <MessageCircle className="h-4 w-4" /> WhatsApp
-                    </Button>
-                  </div>
-                </div>
-
-                <div className="mt-5 flex gap-2">
-                  {slides.map((_, i) => (
-                    <button
-                      key={i}
-                      onClick={() => setIdx(i)}
-                      className={`h-2 w-7 rounded-full transition ${i === idx ? "bg-[var(--accent)]" : "bg-pure-white/20 hover:bg-pure-white/30"}`}
-                      aria-label={`Slide ${i + 1}`}
-                    />
-                  ))}
-                </div>
-              </div>
-            </div>
-          </Card>
-
-          {/* Right side cards */}
-          <div className="grid gap-4">
-            <Card className="p-5">
-              <div className="text-sm font-semibold text-white">Search</div>
-              <div className="mt-3">
-                <Input
-                  value={props.search}
-                  onChange={(v) => {
-                    props.setSearch(v);
-                    props.onGoShop();
-                  }}
-                  placeholder={props.t("searchPlaceholder")}
-                />
-              </div>
-              <p className="mt-3 text-xs text-white/50">
-                Tip: Search by model (e.g., iPhone 13) or part name (e.g., screen, battery, cable).
-              </p>
-            </Card>
-
-            <Card className="p-5">
-              <div className="text-sm font-semibold text-white">Today’s Promise</div>
-              <div className="mt-3 grid gap-2 text-sm text-white/70">
-                <div className="flex items-center gap-2">
-                  <Truck className="h-4 w-4 text-[#00b4d8]" /> Free delivery (Sri Lanka)
-                </div>
-                <div className="flex items-center gap-2">
-                  <RotateCcw className="h-4 w-4 text-[#ff6b00]" /> 14-day returns
-                </div>
-                <div className="flex items-center gap-2">
-                  <ShieldCheck className="h-4 w-4 text-white/60" /> Secure checkout
-                </div>
-              </div>
-            </Card>
+    <div className="pb-16 text-[#111111]">
+      <Container className="px-0 sm:px-4">
+        {/* Full-width Hero Banner Slider (Celltronics Screenshot Look) */}
+        <div className="relative overflow-hidden w-full sm:mt-6 sm:rounded-2xl shadow-sm">
+          <div className="relative aspect-[16/6] w-full sm:aspect-[16/5.5]">
+            <img
+              src={slides[idx]}
+              alt="Promo Banner"
+              className="absolute inset-0 h-full w-full object-cover"
+            />
           </div>
         </div>
 
+        {/* 2-Grid Watch Category Promo Banners */}
+        <div className="mt-4 px-4 sm:px-0 grid grid-cols-2 gap-3.5">
+          <button
+            onClick={() => {
+              props.onPreset({ partType: "Accessories" });
+              props.onGoShop();
+            }}
+            className="group relative overflow-hidden rounded-2xl bg-white shadow-sm border border-gray-100 aspect-[1.8/1] active:scale-[0.98] transition-transform"
+          >
+            <img
+              src={watchBanner1}
+              alt="Apple Watch Series 11 & Ultra 3"
+              className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+            />
+          </button>
+          <button
+            onClick={() => {
+              props.onPreset({ partType: "Accessories" });
+              props.onGoShop();
+            }}
+            className="group relative overflow-hidden rounded-2xl bg-white shadow-sm border border-gray-100 aspect-[1.8/1] active:scale-[0.98] transition-transform"
+          >
+            <img
+              src={watchBanner2}
+              alt="Samsung Galaxy Watch 8 & 8 Classic"
+              className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+            />
+          </button>
+        </div>
+
         {/* Quick categories */}
-        <div className="mt-8">
+        <div className="mt-8 px-4 sm:px-0">
           <div className="flex items-end justify-between gap-3">
             <div>
-              <div className="text-sm font-semibold text-white">Quick Categories</div>
-              <div className="text-xs text-white/50">Tap to filter shop instantly</div>
+              <div className="text-sm font-bold text-gray-800 uppercase tracking-wide">Quick Categories</div>
+              <div className="text-xs text-gray-500">Tap to filter shop instantly</div>
             </div>
-            <button className="text-sm font-semibold text-[#00b4d8] hover:underline" onClick={props.onGoShop}>
+            <button className="text-sm font-bold text-[#0073fe] hover:underline" onClick={props.onGoShop}>
               View all
             </button>
           </div>
@@ -179,88 +117,117 @@ export function HomePage(props: {
                   props.onPreset(c.preset);
                   props.onGoShop();
                 }}
-                className="group rounded-2xl border border-white/10 bg-white/[0.04] p-4 text-left transition hover:border-white/20 hover:bg-white/[0.06]"
+                className="group rounded-2xl border border-gray-100 bg-white p-4 text-left transition shadow-sm hover:border-[#0073fe]/30 hover:bg-gray-50/50"
               >
                 <div className="flex items-center gap-3">
-                  <div className="grid h-10 w-10 place-items-center rounded-2xl bg-white/5 group-hover:bg-white/10">
-                    <c.icon className="h-5 w-5 text-white" />
+                  <div className="grid h-10 w-10 place-items-center rounded-2xl bg-gray-50 group-hover:bg-[#0073fe]/10">
+                    <c.icon className="h-5 w-5 text-gray-600 group-hover:text-[#0073fe]" />
                   </div>
-                  <div className="text-sm font-semibold text-white">{c.label}</div>
+                  <div className="text-sm font-bold text-gray-700">{c.label}</div>
                 </div>
               </button>
             ))}
           </div>
         </div>
 
-
-        {/* Featured */}
-        <div className="mt-10">
-          <div className="flex items-end justify-between gap-3">
-            <div>
-              <div className="text-sm font-semibold text-white">Featured Products</div>
-              <div className="text-xs text-white/50">Hand-picked by admin (or newest)</div>
-            </div>
-            <Button variant="secondary" onClick={props.onGoShop}>
-              Shop
-            </Button>
+        {/* Latest Mobile Phones Header with Blue Line */}
+        <div className="mt-10 px-4 sm:px-0">
+          <div className="border-b-2 border-gray-200/80 pb-1 relative">
+            <h2 className="text-lg font-black uppercase tracking-wider text-gray-800 font-[Poppins]">
+              LATEST MOBILE PHONES
+            </h2>
+            <div className="absolute bottom-[-2px] left-0 w-24 h-0.5 bg-[#0073fe]" />
           </div>
 
-          <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-            {featured.map((p) => (
-              <button
-                key={p.id}
-                onClick={() => props.onOpenProduct(p.id)}
-                className="group rounded-2xl border border-white/10 bg-white/[0.03] p-3 text-left transition hover:border-white/20 hover:bg-white/[0.06]"
-              >
-                <div className="aspect-square w-full overflow-hidden rounded-xl bg-white/5">
-                  {p.images?.[0] ? (
-                    <img src={p.images[0]} alt={p.name} className="h-full w-full object-cover transition group-hover:scale-105" />
-                  ) : (
-                    <div className="h-full w-full bg-[radial-gradient(circle_at_30%_20%,rgba(0,180,216,0.25),transparent_45%),radial-gradient(circle_at_80%_10%,rgba(255,107,0,0.2),transparent_45%)]" />
-                  )}
-                </div>
-                <div className="mt-3">
-                  <div className="line-clamp-2 text-sm font-semibold text-white">{p.name}</div>
-                  <div className="mt-1 text-xs text-white/50">
-                    {p.brand} • {p.model} • {p.partType}
+          {/* Product Grid (Matches Celltronics screenshot) */}
+          <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+            {featured.map((p) => {
+              const isWishlisted = props.wishlist?.includes(p.id) ?? false;
+              return (
+                <div
+                  key={p.id}
+                  onClick={() => props.onOpenProduct(p.id)}
+                  className="group relative flex flex-col justify-between rounded-2xl border border-gray-100 bg-white p-3 text-left transition shadow-sm hover:border-gray-200/80 hover:shadow-md cursor-pointer"
+                >
+                  <div className="relative aspect-square w-full overflow-hidden rounded-xl bg-gray-50/50">
+                    {p.images?.[0] ? (
+                      <img
+                        src={p.images[0]}
+                        alt={p.name}
+                        className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
+                      />
+                    ) : (
+                      <div className="h-full w-full bg-gradient-to-tr from-gray-100 to-gray-50" />
+                    )}
+
+                    {/* Overlay Heart/Wishlist Button */}
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        props.toggleWishlist?.(p.id);
+                      }}
+                      className={cn(
+                        "absolute right-2 top-2 z-10 flex h-9 w-9 items-center justify-center rounded-full border bg-white shadow-sm transition hover:scale-105 active:scale-95",
+                        isWishlisted ? "border-[#0073fe]" : "border-gray-200"
+                      )}
+                    >
+                      <Heart
+                        className={cn(
+                          "h-4.5 w-4.5 transition-colors",
+                          isWishlisted ? "fill-[#0073fe] text-[#0073fe]" : "text-gray-400"
+                        )}
+                      />
+                    </button>
                   </div>
-                  <div className="mt-2 flex items-center justify-between">
-                    <div className="font-[Poppins] text-sm font-bold text-white">Rs. {Number(p.price).toLocaleString()}</div>
-                    <Stars value={p.rating ?? 0} />
+
+                  <div className="mt-3.5 flex flex-col flex-grow">
+                    <div className="line-clamp-2 text-sm font-bold text-gray-800 leading-snug group-hover:text-[#0073fe] transition-colors">
+                      {p.name}
+                    </div>
+                    <div className="mt-1 text-xs font-semibold text-gray-400">
+                      {p.brand} • {p.model}
+                    </div>
+                    <div className="mt-auto pt-3 flex items-center justify-between">
+                      <div className="font-[Poppins] text-sm font-black text-gray-800">
+                        Rs. {Number(p.price).toLocaleString()}
+                      </div>
+                      <Stars value={p.rating ?? 0} />
+                    </div>
                   </div>
                 </div>
-              </button>
-            ))}
+              );
+            })}
           </div>
         </div>
 
         {/* Testimonials */}
-        <div className="mt-12">
-          <div className="text-sm font-semibold text-white">Testimonials</div>
+        <div className="mt-12 px-4 sm:px-0">
+          <div className="text-sm font-bold text-gray-800 uppercase tracking-wide">Testimonials</div>
           <div className="mt-4 grid gap-3 md:grid-cols-3">
             {testimonials.slice(0, 6).map((x, i) => (
-              <Card key={i} className="p-5">
+              <Card key={i} className="p-5 border border-gray-100 bg-white shadow-sm">
                 <div className="flex items-center justify-between gap-3">
-                  <div className="text-sm font-semibold text-white">{x.name}</div>
+                  <div className="text-sm font-bold text-gray-700">{x.name}</div>
                   <Stars value={x.rating} />
                 </div>
-                <p className="mt-3 text-sm text-white/70">“{x.text}”</p>
+                <p className="mt-3 text-sm text-gray-500 italic font-medium leading-relaxed">“{x.text}”</p>
               </Card>
             ))}
           </div>
         </div>
 
         {/* Newsletter */}
-        <div className="mt-12">
-          <Card className="p-5 sm:p-7">
+        <div className="mt-12 px-4 sm:px-0">
+          <Card className="p-5 sm:p-7 border border-gray-100 bg-white shadow-sm">
             <div className="grid gap-4 lg:grid-cols-[1fr_1fr]">
               <div>
-                <div className="font-[Poppins] text-lg font-bold text-white">{props.t("newsletterTitle")}</div>
-                <p className="mt-1 text-sm text-white/60">No spam. Only deals and restock alerts.</p>
+                <div className="font-[Poppins] text-lg font-bold text-gray-800">{props.t("newsletterTitle")}</div>
+                <p className="mt-1 text-sm text-gray-500">No spam. Only deals and restock alerts.</p>
               </div>
               <div className="flex flex-col gap-2 sm:flex-row">
-                <Input value={props.newsletterEmail} onChange={props.setNewsletterEmail} placeholder="Email" />
-                <Button onClick={props.onNewsletter} className="shrink-0">
+                <Input value={props.newsletterEmail} onChange={props.setNewsletterEmail} placeholder="Email" className="border-gray-200 text-gray-800" />
+                <Button onClick={props.onNewsletter} className="shrink-0 bg-[#0073fe] hover:bg-[#0056b3]">
                   {props.t("newsletterCta")}
                 </Button>
               </div>

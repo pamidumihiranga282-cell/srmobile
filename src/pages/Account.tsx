@@ -224,8 +224,12 @@ export function AccountPage(props: {
   products: Product[];
   toggleWishlist: (id: string) => void;
   adminPhone: string;
+  tab?: "orders" | "profile" | "wishlist";
+  setTab?: (t: "orders" | "profile" | "wishlist") => void;
 }) {
-  const [tab, setTab] = useState<"orders" | "profile" | "wishlist">("orders");
+  const [localTab, setLocalTab] = useState<"orders" | "profile" | "wishlist">("orders");
+  const tab = props.tab ?? localTab;
+  const setTab = props.setTab ?? setLocalTab;
 
   const [name, setName] = useState(props.profile.name);
   const [phone, setPhone] = useState(props.profile.phone);
