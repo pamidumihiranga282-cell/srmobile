@@ -55,15 +55,19 @@ export function Navbar(props: {
             <span className="text-xs font-black uppercase tracking-wider text-pure-white">MENU</span>
           </button>
 
-          {/* Centered CELLTRONICS style logo */}
-          <div className="flex items-center justify-center">
+          {/* Centered CELLTRONICS style logo — tapping goes home */}
+          <button
+            onClick={() => { props.setView("home"); setMobileMenuOpen(false); }}
+            className="flex items-center justify-center focus:outline-none active:opacity-75 transition-opacity"
+            aria-label="Go to home"
+          >
             <span className="font-[Poppins] text-xl font-black italic tracking-wide text-pure-white">
               SR MOBILE
             </span>
             <div className="relative -top-1 ml-0.5">
               <Wifi className="h-4 w-4 rotate-45 text-pure-white animate-pulse" />
             </div>
-          </div>
+          </button>
 
           {/* Cart Icon with badge */}
           <button
