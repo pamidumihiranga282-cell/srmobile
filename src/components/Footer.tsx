@@ -57,9 +57,21 @@ export function Footer(props: { settings: SiteSettings; setView: (v: ViewKey) =>
               {link("refund", "Refund & Return Policy")}
               {link("terms", "Terms & Conditions")}
             </div>
-            <p className="mt-4 text-xs text-white/40">
-              © {new Date().getFullYear()} SR MOBILE. All rights reserved.
-            </p>
+            <div className="mt-4 text-xs text-white/40 flex flex-wrap items-center gap-x-2 gap-y-1">
+              <span>© {new Date().getFullYear()} SR MOBILE. All rights reserved.</span>
+              <span className="hidden sm:inline text-white/20">|</span>
+              <span>
+                Developed by{" "}
+                <a
+                  href="https://wa.me/94786800086"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-semibold text-white/60 hover:text-[#00b4d8] transition-colors"
+                >
+                  SmartZone (078 68000 86)
+                </a>
+              </span>
+            </div>
           </div>
         </div>
       </Container>
