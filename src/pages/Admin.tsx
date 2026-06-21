@@ -143,7 +143,6 @@ export function AdminPage(props: {
           .map((x) => x.trim())
           .filter(Boolean),
         createdBy: props.profile.email,
-        createdAt: undefined,
       } as any;
 
       let productId = editing?.id;

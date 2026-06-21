@@ -244,8 +244,8 @@ export function ShopPage(props: {
                         </button>
                       </div>
 
-                      <div className="absolute right-2 top-2 rounded-full bg-black/50 px-2 py-1 text-[11px] font-semibold text-white/80">
-                        Stock: {p.stock}
+                      <div className={`absolute right-2 top-2 rounded-full px-2 py-1 text-[11px] font-semibold ${p.stock > 0 ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30" : "bg-red-500/20 text-red-300 border border-red-500/30"}`}>
+                        {p.stock > 0 ? "In Stock" : "Out of Stock"}
                       </div>
                     </div>
 

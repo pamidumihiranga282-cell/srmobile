@@ -102,7 +102,9 @@ export async function createProduct(payload: Omit<Product, "id">) {
 
 export async function updateProduct(productId: string, patch: Partial<Product>) {
   const { id: _ignore, ...rest } = patch as any;
-  await updateDoc(doc(db, "products", productId), { ...rest, updatedAt: serverTimestamp() });
+  // Strip undefined values — Firestore rejects them
+  const clean = Object.fromEntries(Object.entries(rest).filter(([, v]) => v !== undefined));
+  await updateDoc(doc(db, "products", productId), { ...clean, updatedAt: serverTimestamp() });
 }
 
 export async function deleteProduct(productId: string) {

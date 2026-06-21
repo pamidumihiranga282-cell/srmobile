@@ -150,7 +150,10 @@ export function ProductDetailPage(props: {
               </div>
             </div>
 
-            <div className="mt-3 text-sm text-white/70">Stock: {p.stock}</div>
+            <div className={`mt-3 inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-sm font-semibold ${p.stock > 0 ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" : "bg-red-500/10 text-red-400 border border-red-500/20"}`}>
+              <span className={`inline-block h-2 w-2 rounded-full ${p.stock > 0 ? "bg-emerald-400" : "bg-red-400"}`} />
+              {p.stock > 0 ? "In Stock" : "Out of Stock"}
+            </div>
 
             {/* Compatibility checker */}
             <Divider className="my-4" />
