@@ -192,23 +192,6 @@ export function HomePage(props: {
           </div>
         </div>
 
-        {/* Shop by model */}
-        <div className="mt-10">
-          <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
-            {modelBrands.map((b) => (
-              <button
-                key={b}
-                onClick={() => {
-                  props.onPreset({ brand: b });
-                  props.onGoShop();
-                }}
-                className="rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-4 text-left hover:bg-white/[0.06]"
-              >
-                <div className="text-sm font-semibold text-white">{b}</div>
-              </button>
-            ))}
-          </div>
-        </div>
 
         {/* Featured */}
         <div className="mt-10">
