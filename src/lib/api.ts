@@ -69,16 +69,26 @@ export function subscribeProducts(cb: (items: Product[]) => void): Unsubscribe {
   return onSnapshot(q, (snap) => {
     const arr: Product[] = [];
     snap.forEach((d) => {
-      const data = d.data() as Omit<Product, "id">;
+      const data = d.data() as any;
+
+      // Support both legacy `imageUrl` (string) and new `images` (array).
+      // Many existing products were saved with imageUrl before the images[] field was added.
+      let images: string[] = [];
+      if (Array.isArray(data.images) && data.images.length > 0) {
+        images = data.images as string[];
+      } else if (typeof data.imageUrl === "string" && data.imageUrl.trim()) {
+        images = [data.imageUrl.trim()];
+      }
+
       arr.push({
         id: d.id,
         name: data.name ?? "",
         brand: data.brand ?? "",
         model: data.model ?? "",
-        partType: data.partType ?? "",
+        partType: data.partType ?? data.category ?? "",
         price: Number(data.price ?? 0),
         stock: Number(data.stock ?? 0),
-        images: (data.images ?? []) as string[],
+        images,
         description: data.description ?? "",
         specs: data.specs ?? "",
         compatibility: (data.compatibility ?? []) as string[],
@@ -192,7 +202,32 @@ export async function getProduct(productId: string): Promise<Product | null> {
   const snap = await getDoc(doc(db, "products", productId));
   if (!snap.exists()) return null;
   const d = snap.data() as any;
-  return { id: snap.id, ...(d as any) } as Product;
+
+  // Support both legacy `imageUrl` (string) and new `images` (array).
+  let images: string[] = [];
+  if (Array.isArray(d.images) && d.images.length > 0) {
+    images = d.images as string[];
+  } else if (typeof d.imageUrl === "string" && d.imageUrl.trim()) {
+    images = [d.imageUrl.trim()];
+  }
+
+  return {
+    id: snap.id,
+    name: d.name ?? "",
+    brand: d.brand ?? "",
+    model: d.model ?? "",
+    partType: d.partType ?? d.category ?? "",
+    price: Number(d.price ?? 0),
+    stock: Number(d.stock ?? 0),
+    images,
+    description: d.description ?? "",
+    specs: d.specs ?? "",
+    compatibility: (d.compatibility ?? []) as string[],
+    createdBy: d.createdBy,
+    createdAt: d.createdAt,
+    rating: d.rating,
+    ratingCount: d.ratingCount,
+  } as Product;
 }
 
 export async function updateOrderStatus(orderId: string, status: OrderStatus, trackingNumber: string) {
