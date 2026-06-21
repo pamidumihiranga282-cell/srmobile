@@ -156,12 +156,12 @@ export function Modal(props: {
           >
             <div
               className={cn(
-                "w-full max-w-xl overflow-hidden rounded-2xl border border-white/10 bg-[#0b0b0b] shadow-2xl",
+                "w-full max-w-xl overflow-hidden rounded-2xl border border-white/10 bg-[#0b0b0b] shadow-2xl flex flex-col max-h-[90vh]",
                 props.className
               )}
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="flex items-center justify-between gap-3 border-b border-white/10 px-4 py-3">
+              <div className="flex shrink-0 items-center justify-between gap-3 border-b border-white/10 px-4 py-3">
                 <div className="font-semibold text-white">{props.title ?? ""}</div>
                 <button
                   className="rounded-lg px-2 py-1 text-white/70 hover:bg-white/10"
@@ -170,7 +170,7 @@ export function Modal(props: {
                   ✕
                 </button>
               </div>
-              <div className="p-4">{props.children}</div>
+              <div className="overflow-y-auto p-4">{props.children}</div>
             </div>
           </motion.div>
         </Fragment>

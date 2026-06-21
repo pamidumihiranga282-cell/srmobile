@@ -3,7 +3,9 @@ import type { Order, PayHereSettings, Product, SiteSettings, Testimonial } from 
 import type { UserProfile } from "@/lib/firebase";
 import {
   createProduct,
+  deleteMessage,
   deleteProduct,
+  listMessages,
   listNewsletter,
   listUsers,
   subscribeAllOrders,
@@ -29,7 +31,7 @@ export function AdminPage(props: {
   profile: UserProfile;
 }) {
   const [tab, setTab] = useState<
-    "products" | "orders" | "users" | "settings" | "home" | "newsletter" | "payhere"
+    "products" | "orders" | "users" | "settings" | "home" | "newsletter" | "payhere" | "messages"
   >("products");
 
   // Orders
@@ -79,6 +81,24 @@ export function AdminPage(props: {
 
   useEffect(() => {
     if (tab === "newsletter") reloadNewsletter();
+  }, [tab]);
+
+  // Messages
+  const [messages, setMessages] = useState<any[]>([]);
+  const [messagesLoading, setMessagesLoading] = useState(false);
+
+  async function reloadMessages() {
+    setMessagesLoading(true);
+    try {
+      const list = await listMessages();
+      setMessages(list);
+    } finally {
+      setMessagesLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    if (tab === "messages") reloadMessages();
   }, [tab]);
 
   // Product modal
@@ -263,6 +283,7 @@ export function AdminPage(props: {
             ["products", "Manage Products"],
             ["orders", "Manage Orders"],
             ["users", "Manage Users"],
+            ["messages", "Messages"],
             ["settings", "Site Settings"],
             ["home", "Homepage Content"],
             ["newsletter", "Newsletter"],
@@ -540,6 +561,54 @@ export function AdminPage(props: {
                   </div>
                 ))}
                 {!newsletterLoading && !newsletter.length ? <div className="text-sm text-white/60">No signups.</div> : null}
+              </div>
+            </Card>
+          ) : null}
+
+          {tab === "messages" ? (
+            <Card className="p-4">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <div className="text-sm font-semibold text-white">Customer Messages</div>
+                  <div className="text-xs text-white/50">Messages sent via the Contact page</div>
+                </div>
+                <Button variant="secondary" onClick={reloadMessages}>
+                  Refresh
+                </Button>
+              </div>
+              <Divider className="my-3" />
+              {messagesLoading ? <Spinner label="Loading..." /> : null}
+              <div className="grid gap-3">
+                {messages.map((m) => (
+                  <div
+                    key={m.id}
+                    className="flex flex-col gap-2 rounded-2xl border border-white/10 bg-white/[0.03] p-4"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <div className="text-sm font-semibold text-[#00b4d8]">{m.fromEmail}</div>
+                        <div className="mt-0.5 text-xs text-white/40">
+                          {m.date?.toDate ? m.date.toDate().toLocaleString() : ""}
+                        </div>
+                      </div>
+                      <Button
+                        variant="danger"
+                        onClick={async () => {
+                          if (!confirm("Delete this message?")) return;
+                          await deleteMessage(m.id);
+                          toast.success("Deleted");
+                          await reloadMessages();
+                        }}
+                      >
+                        Delete
+                      </Button>
+                    </div>
+                    <p className="text-sm text-white/80">{m.message}</p>
+                  </div>
+                ))}
+                {!messagesLoading && !messages.length ? (
+                  <div className="text-sm text-white/60">No messages yet.</div>
+                ) : null}
               </div>
             </Card>
           ) : null}

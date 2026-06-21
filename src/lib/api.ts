@@ -137,6 +137,16 @@ export async function addMessage(fromEmail: string, message: string) {
   await addDoc(collection(db, "messages"), { fromEmail, message, date: serverTimestamp() });
 }
 
+export async function listMessages() {
+  const q = query(collection(db, "messages"), orderBy("date", "desc"));
+  const snap = await getDocs(q);
+  return snap.docs.map((d) => ({ id: d.id, ...(d.data() as any) }));
+}
+
+export async function deleteMessage(messageId: string) {
+  await deleteDoc(doc(db, "messages", messageId));
+}
+
 export async function addNewsletter(email: string) {
   await setDoc(doc(db, "newsletter", email), { email, date: serverTimestamp() }, { merge: true });
 }

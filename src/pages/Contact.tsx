@@ -26,7 +26,7 @@ export function ContactPage(props: { settings: SiteSettings }) {
           <Card className="p-4 sm:p-6">
             <div className="text-sm font-semibold text-white">Store Details</div>
             <Divider className="my-3" />
-            <div className="space-y-2 text-sm text-white/70">
+            <div className="space-y-3 text-sm text-white/70">
               <div>
                 <span className="text-white/50">Brand:</span> SR MOBILE
               </div>
@@ -36,9 +36,18 @@ export function ContactPage(props: { settings: SiteSettings }) {
               <div>
                 <span className="text-white/50">Address:</span> {props.settings.address || "Galle, Sri Lanka"}
               </div>
-              <div>
-                <span className="text-white/50">Support:</span> WhatsApp 24/7
-              </div>
+              <Button
+                variant="secondary"
+                className="w-full border border-green-500/30 bg-green-600/10 text-green-400 hover:bg-green-600/20"
+                onClick={() => {
+                  const raw = props.settings.phone || "0726306039";
+                  const digits = raw.replace(/\D/g, "");
+                  const waPhone = digits.startsWith("94") ? digits : digits.startsWith("0") ? `94${digits.slice(1)}` : `94${digits}`;
+                  window.open(`https://wa.me/${waPhone}`, "_blank");
+                }}
+              >
+                Chat on WhatsApp
+              </Button>
             </div>
 
             <Divider className="my-4" />
@@ -62,7 +71,7 @@ export function ContactPage(props: { settings: SiteSettings }) {
           <Card className="overflow-hidden">
             <div className="p-4">
               <div className="text-sm font-semibold text-white">Find us on map</div>
-              <div className="text-xs text-white/50">Google Maps (Anuradhapura)</div>
+              <div className="text-xs text-white/50">Google Maps (Galle)</div>
             </div>
             <div className="aspect-[16/12] w-full bg-white/5">
               <iframe
@@ -70,7 +79,7 @@ export function ContactPage(props: { settings: SiteSettings }) {
                 className="h-full w-full"
                 loading="lazy"
                 referrerPolicy="no-referrer-when-downgrade"
-                src="https://www.google.com/maps?q=Anuradhapura%2C%20Sri%20Lanka&output=embed"
+                src="https://www.google.com/maps?q=Galle%2C%20Sri%20Lanka&output=embed"
               />
             </div>
           </Card>

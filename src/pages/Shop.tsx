@@ -11,7 +11,7 @@ export type ShopFilters = {
   minPrice: string;
   maxPrice: string;
   ratingMin: string;
-  sort: "popularity" | "newest" | "price_asc";
+  sort: "popularity" | "newest" | "price_asc" | "price_desc";
 };
 
 export function ShopPage(props: {
@@ -75,6 +75,8 @@ export function ShopPage(props: {
 
     if (props.filters.sort === "price_asc") {
       arr = arr.sort((a, b) => Number(a.price) - Number(b.price));
+    } else if (props.filters.sort === "price_desc") {
+      arr = arr.sort((a, b) => Number(b.price) - Number(a.price));
     } else if (props.filters.sort === "newest") {
       arr = arr.sort((a, b) => (b.createdAt?.toMillis?.() ?? 0) - (a.createdAt?.toMillis?.() ?? 0));
     } else {
@@ -190,6 +192,7 @@ export function ShopPage(props: {
                     { value: "popularity", label: "Popularity" },
                     { value: "newest", label: "Newest" },
                     { value: "price_asc", label: "Price Low-High" },
+                    { value: "price_desc", label: "Price High-Low" },
                   ]}
                 />
               </div>
