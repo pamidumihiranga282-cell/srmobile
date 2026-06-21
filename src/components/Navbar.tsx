@@ -5,6 +5,7 @@ import { cn } from "@/utils/cn";
 import { Button, Container, Input } from "./ui";
 import type { Lang } from "@/lib/i18n";
 import type { UserProfile } from "@/lib/firebase";
+import logoSrc from "@/assets/logo.png";
 
 export type ViewKey =
   | "home"
@@ -56,13 +57,15 @@ export function Navbar(props: {
         <div className="flex items-center gap-3">
           <motion.button
             onClick={() => props.setView("home")}
-            className="group flex items-center gap-3 rounded-2xl px-2 py-1"
+            className="group flex items-center gap-2 rounded-2xl px-1 py-1"
             initial={{ opacity: 0, y: -8 }}
             animate={{ opacity: 1, y: 0 }}
           >
-            <div className="grid h-10 w-10 place-items-center rounded-2xl bg-[linear-gradient(135deg,#00b4d8,#ff6b00)] shadow-lg shadow-cyan-500/10">
-              <span className="text-sm font-black text-black">SR</span>
-            </div>
+            <img
+              src={logoSrc}
+              alt="SR Mobile Logo"
+              className="h-10 w-10 sm:h-12 sm:w-12 rounded-xl object-contain drop-shadow-[0_0_8px_rgba(0,180,216,0.5)] transition group-hover:drop-shadow-[0_0_12px_rgba(0,180,216,0.75)]"
+            />
             <div className="hidden sm:block text-left">
               <div className="font-[Poppins] text-sm font-bold tracking-wide text-white">SR MOBILE</div>
               <div className="text-xs text-white/50 leading-tight">{props.t("tagline")}</div>
