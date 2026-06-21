@@ -12,7 +12,7 @@ export function Footer(props: { settings: SiteSettings; setView: (v: ViewKey) =>
 
   return (
     <footer className="mt-14 border-t border-white/10 bg-black/30">
-      <Container className="py-10">
+      <Container className="pt-10 pb-24 sm:pb-10">
         <div className="grid gap-8 md:grid-cols-3">
           <div>
             <div className="font-[Poppins] text-lg font-bold text-white">SR MOBILE</div>
