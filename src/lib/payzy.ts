@@ -142,7 +142,7 @@ export async function submitPayzyPayment(args: {
 
     const redirectUrl = resData?.data?.url || resData?.url;
     if (redirectUrl) {
-      window.open(redirectUrl, "_blank");
+      window.location.href = redirectUrl;
     } else {
       throw new Error("Invalid response format, redirect URL not found.");
     }

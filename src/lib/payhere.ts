@@ -61,7 +61,7 @@ export function submitPayHerePayment(args: {
   const form = document.createElement("form");
   form.method = "POST";
   form.action = payhereCheckoutUrl(settings.sandbox);
-  form.target = "_blank";
+  form.target = "_self";
 
   const fields: Record<string, string> = {
     merchant_id: settings.merchantId,

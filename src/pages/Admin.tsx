@@ -121,6 +121,26 @@ export function AdminPage(props: {
   const [pImages, setPImages] = useState<string[]>([]);
   const [pIsDigital, setPIsDigital] = useState(false);
 
+  const dynamicCategories = useMemo(() => {
+    const defaults = ["Screen", "Battery", "Accessories", "Repair Tools", "Charging", "Unlock Tools on Rent"];
+    const fromProducts = props.products.map(p => p.partType).filter(Boolean);
+    const unique = Array.from(new Set([...defaults, ...fromProducts]));
+    return unique.sort();
+  }, [props.products]);
+
+  const [selectedCategory, setSelectedCategory] = useState("");
+  const [filePreviews, setFilePreviews] = useState<string[]>([]);
+
+  useEffect(() => {
+    if (!pFiles.length) {
+      setFilePreviews([]);
+      return;
+    }
+    const urls = pFiles.map((f) => URL.createObjectURL(f));
+    setFilePreviews(urls);
+    return () => urls.forEach((url) => URL.revokeObjectURL(url));
+  }, [pFiles]);
+
   // Order edit modal
   const [orderOpen, setOrderOpen] = useState(false);
   const [editingOrder, setEditingOrder] = useState<Order | null>(null);
@@ -192,6 +212,7 @@ export function AdminPage(props: {
     setPImages([]);
     setPFiles([]);
     setPIsDigital(false);
+    setSelectedCategory("");
     setProductOpen(true);
   }
 
@@ -209,6 +230,15 @@ export function AdminPage(props: {
     setPImages(p.images ?? []);
     setPFiles([]);
     setPIsDigital(!!p.isDigital);
+    if (p.partType) {
+      if (dynamicCategories.includes(p.partType)) {
+        setSelectedCategory(p.partType);
+      } else {
+        setSelectedCategory("custom");
+      }
+    } else {
+      setSelectedCategory("");
+    }
     setProductOpen(true);
   }
 
@@ -831,9 +861,34 @@ export function AdminPage(props: {
             </div>
           </div>
           <div>
-            <div className="text-xs font-semibold text-white/70">Part Type</div>
-            <Input value={pPartType} onChange={setPPartType} placeholder="Screen / Battery / Accessories" />
+            <div className="text-xs font-semibold text-white/70">Category (Part Type) *</div>
+            <Select
+              value={selectedCategory}
+              onChange={(v) => {
+                setSelectedCategory(v);
+                if (v !== "custom") {
+                  setPPartType(v);
+                } else {
+                  setPPartType("");
+                }
+              }}
+              options={[
+                { value: "", label: "-- Select Category --" },
+                ...dynamicCategories.map((c) => ({ value: c, label: c })),
+                { value: "custom", label: "+ Create New Category" },
+              ]}
+            />
           </div>
+          {selectedCategory === "custom" && (
+            <div>
+              <div className="text-xs font-semibold text-[#00b4d8]">New Category Name *</div>
+              <Input
+                value={pPartType}
+                onChange={setPPartType}
+                placeholder="Enter new category name..."
+              />
+            </div>
+          )}
           <div className="grid grid-cols-2 gap-2">
             <div>
               <div className="text-xs font-semibold text-white/70">Price</div>
@@ -893,6 +948,28 @@ export function AdminPage(props: {
             />
             <div className="mt-1 text-xs text-white/40">Select multiple images. They will be uploaded and saved to product.images[]</div>
           </div>
+          {filePreviews.length > 0 && (
+            <div>
+              <div className="text-xs font-semibold text-[#00b4d8]">Selected Previews (Will be uploaded)</div>
+              <div className="mt-2 flex flex-wrap gap-2">
+                {filePreviews.map((url, idx) => (
+                  <div key={url} className="relative h-16 w-16 overflow-hidden rounded-xl border border-[#00b4d8]/30 bg-white/5">
+                    <img src={url} alt="selected preview" className="h-full w-full object-cover" />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setPFiles((prev) => prev.filter((_, i) => i !== idx));
+                      }}
+                      className="absolute right-1 top-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white hover:bg-red-600 transition"
+                      title="Remove image"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           <div className="flex justify-end gap-2 pt-2">
             <Button variant="secondary" onClick={() => setProductOpen(false)}>
