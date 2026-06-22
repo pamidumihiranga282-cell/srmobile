@@ -23,13 +23,13 @@ export function parseHash(): ViewKey {
 }
 
 export function setHash(view: ViewKey, query?: Record<string, string>) {
-  const q = query
+  const queryStr = query
     ? "?" +
       Object.entries(query)
         .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`)
         .join("&")
     : "";
-  window.location.hash = `#${view}${q}`;
+  window.location.hash = `#${view}${queryStr}`;
 }
 
 export function getHashQuery() {

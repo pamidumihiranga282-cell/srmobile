@@ -38,15 +38,6 @@ export function CheckoutPage(props: {
   profile: UserProfile | null;
   view?: string;
 }) {
-  const subtotal = cartSubtotal(props.cart);
-  const discount = computeDiscount(props.cart);
-  const delivery = props.settings.deliveryCharge ?? 500;
-  const totalWithoutSurcharge = Math.max(0, subtotal - discount) + delivery;
-  const isPayzy = paymentMethod === "Payzy";
-  const payzySurcharge = isPayzy ? Math.round(totalWithoutSurcharge * 0.14) : 0;
-  const total = totalWithoutSurcharge + payzySurcharge;
-  const payzyMonthly = isPayzy ? Math.round(total / 4) : 0;
-
   const [name, setName] = useState(props.profile?.name ?? "");
   const [email, setEmail] = useState(props.profile?.email ?? "");
   const [phone, setPhone] = useState(props.profile?.phone ?? "");
@@ -59,6 +50,15 @@ export function CheckoutPage(props: {
   const [paymentMethod, setPaymentMethod] = useState<
     "Card" | "Cash on Delivery" | "Bank Transfer" | "PayHere" | "Payzy"
   >("Cash on Delivery");
+
+  const subtotal = cartSubtotal(props.cart);
+  const discount = computeDiscount(props.cart);
+  const delivery = props.settings.deliveryCharge ?? 500;
+  const totalWithoutSurcharge = Math.max(0, subtotal - discount) + delivery;
+  const isPayzy = paymentMethod === "Payzy";
+  const payzySurcharge = isPayzy ? Math.round(totalWithoutSurcharge * 0.14) : 0;
+  const total = totalWithoutSurcharge + payzySurcharge;
+  const payzyMonthly = isPayzy ? Math.round(total / 4) : 0;
 
   // Holds the confirmed order info for the success screen
   const [placed, setPlaced] = useState<Placed | null>(null);
