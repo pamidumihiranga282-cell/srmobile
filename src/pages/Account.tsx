@@ -17,6 +17,9 @@ import {
   Truck,
   User,
   Heart,
+  Key,
+  Copy,
+  Check,
 } from "lucide-react";
 
 /** Normalise any LK phone → 94x for wa.me */
@@ -63,8 +66,17 @@ const STATUS_CONFIG: Record<
 
 function OrderCard({ o, adminPhone }: { o: Order; adminPhone: string }) {
   const [expanded, setExpanded] = useState(false);
+  const [copied, setCopied] = useState(false);
   const st = STATUS_CONFIG[o.status] ?? STATUS_CONFIG.pending;
   const StatusIcon = st.Icon;
+
+  function handleCopy() {
+    if (!o.digitalCredentials) return;
+    navigator.clipboard.writeText(o.digitalCredentials);
+    setCopied(true);
+    toast.success("Credentials copied!");
+    setTimeout(() => setCopied(false), 2000);
+  }
 
   const orderDate = (o as any).orderDate?.toDate?.()
     ? new Intl.DateTimeFormat("en-LK", {
@@ -175,6 +187,35 @@ function OrderCard({ o, adminPhone }: { o: Order; adminPhone: string }) {
                   <div className="col-span-2">
                     <div className="text-white/40">Notes</div>
                     <div className="mt-0.5 text-white/80">{o.notes}</div>
+                  </div>
+                )}
+                {o.digitalCredentials && (
+                  <div className="col-span-2 mt-2 rounded-xl border border-[#00b4d8]/30 bg-[#00b4d8]/5 p-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2 text-xs font-semibold text-[#00b4d8]">
+                        <Key className="h-4 w-4" />
+                        <span>Access Credentials / Unlock Info</span>
+                      </div>
+                      <button
+                        onClick={handleCopy}
+                        className="flex items-center gap-1 rounded bg-[#00b4d8]/10 px-2 py-0.5 text-[10px] font-semibold text-[#00b4d8] hover:bg-[#00b4d8]/20 transition"
+                      >
+                        {copied ? (
+                          <>
+                            <Check className="h-3 w-3" />
+                            <span>Copied</span>
+                          </>
+                        ) : (
+                          <>
+                            <Copy className="h-3 w-3" />
+                            <span>Copy</span>
+                          </>
+                        )}
+                      </button>
+                    </div>
+                    <pre className="mt-2 whitespace-pre-wrap rounded bg-black/30 p-2 font-mono text-xs text-white/90">
+                      {o.digitalCredentials}
+                    </pre>
                   </div>
                 )}
               </div>

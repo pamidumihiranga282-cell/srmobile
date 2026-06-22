@@ -119,6 +119,7 @@ export function AdminPage(props: {
   const [pCompat, setPCompat] = useState("");
   const [pFiles, setPFiles] = useState<File[]>([]);
   const [pImages, setPImages] = useState<string[]>([]);
+  const [pIsDigital, setPIsDigital] = useState(false);
 
   // Order edit modal
   const [orderOpen, setOrderOpen] = useState(false);
@@ -134,6 +135,7 @@ export function AdminPage(props: {
   const [oPaymentMethod, setOPaymentMethod] = useState<Order["paymentMethod"]>("Cash on Delivery");
   const [oStatus, setOStatus] = useState<Order["status"]>("pending");
   const [oTracking, setOTracking] = useState("");
+  const [oDigitalCredentials, setODigitalCredentials] = useState("");
 
   function openEditOrder(o: Order) {
     setEditingOrder(o);
@@ -148,6 +150,7 @@ export function AdminPage(props: {
     setOPaymentMethod(o.paymentMethod ?? "Cash on Delivery");
     setOStatus(o.status ?? "pending");
     setOTracking(o.trackingNumber ?? "");
+    setODigitalCredentials(o.digitalCredentials ?? "");
     setOrderOpen(true);
   }
 
@@ -166,6 +169,7 @@ export function AdminPage(props: {
         paymentMethod: oPaymentMethod,
         status: oStatus,
         trackingNumber: oTracking,
+        digitalCredentials: oDigitalCredentials,
       });
       toast.success("Order details updated successfully");
       setOrderOpen(false);
@@ -187,6 +191,7 @@ export function AdminPage(props: {
     setPCompat("");
     setPImages([]);
     setPFiles([]);
+    setPIsDigital(false);
     setProductOpen(true);
   }
 
@@ -203,6 +208,7 @@ export function AdminPage(props: {
     setPCompat((p.compatibility ?? []).join(", "));
     setPImages(p.images ?? []);
     setPFiles([]);
+    setPIsDigital(!!p.isDigital);
     setProductOpen(true);
   }
 
@@ -224,6 +230,7 @@ export function AdminPage(props: {
           .map((x) => x.trim())
           .filter(Boolean),
         createdBy: props.profile.email,
+        isDigital: pIsDigital,
       } as any;
 
       let productId = editing?.id;
@@ -838,6 +845,12 @@ export function AdminPage(props: {
             </div>
           </div>
           <div>
+            <label className="flex items-center gap-2 text-sm text-white/80 cursor-pointer">
+              <input type="checkbox" checked={pIsDigital} onChange={(e) => setPIsDigital(e.target.checked)} />
+              <span>Mark as Digital Product (Unlock tool, no delivery details required)</span>
+            </label>
+          </div>
+          <div>
             <div className="text-xs font-semibold text-white/70">Compatibility (comma separated: Brand|Model)</div>
             <Input value={pCompat} onChange={setPCompat} placeholder="Apple|iPhone 13, Apple|iPhone 13 Pro" />
           </div>
@@ -937,6 +950,7 @@ export function AdminPage(props: {
                   { value: "Cash on Delivery", label: "Cash on Delivery" },
                   { value: "Bank Transfer", label: "Bank Transfer" },
                   { value: "PayHere", label: "PayHere" },
+                  { value: "Payzy", label: "Payzy" },
                 ]}
               />
             </div>
@@ -963,6 +977,10 @@ export function AdminPage(props: {
               <div className="text-xs font-semibold text-white/70">Tracking Number</div>
               <Input value={oTracking} onChange={setOTracking} />
             </div>
+          </div>
+          <div>
+            <div className="text-xs font-semibold text-white/70">Digital Credentials (User/Password)</div>
+            <Textarea value={oDigitalCredentials} onChange={setODigitalCredentials} rows={3} placeholder="Enter login credentials or download details for digital products..." />
           </div>
           <div>
             <div className="text-xs font-semibold text-white/70">Order Notes</div>

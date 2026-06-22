@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from "framer-motion";
-import { Wrench, Smartphone, Cable, ShieldCheck, Truck, RotateCcw, MessageCircle, Heart } from "lucide-react";
+import { Wrench, Smartphone, Cable, ShieldCheck, Truck, RotateCcw, MessageCircle, Heart, Key } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import type { Product, SiteSettings, Testimonial } from "@/lib/types";
 import { Button, Card, Container, Input } from "@/components/ui";
@@ -52,6 +52,7 @@ export function HomePage(props: {
     { label: "Accessories", icon: Cable, preset: { partType: "Accessories" } },
     { label: "Repair Tools", icon: Wrench, preset: { partType: "Repair Tools" } },
     { label: "Charging", icon: Cable, preset: { partType: "Charging" } },
+    { label: "Unlock Tools on Rent", icon: Key, preset: { partType: "Unlock Tools on Rent" } },
   ];
 
   return (
@@ -109,7 +110,7 @@ export function HomePage(props: {
               View all
             </button>
           </div>
-          <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+          <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
             {categories.map((c) => (
               <button
                 key={c.label}

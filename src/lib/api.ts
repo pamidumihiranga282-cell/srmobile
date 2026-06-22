@@ -121,6 +121,7 @@ export function subscribeProducts(cb: (items: Product[]) => void): Unsubscribe {
         createdAt: data.createdAt,
         rating: data.rating,
         ratingCount: data.ratingCount,
+        isDigital: !!data.isDigital,
       });
     });
     cb(arr);
@@ -308,6 +309,7 @@ export async function getProduct(productId: string): Promise<Product | null> {
     createdAt: d.createdAt,
     rating: d.rating,
     ratingCount: d.ratingCount,
+    isDigital: !!d.isDigital,
   } as Product;
 }
 

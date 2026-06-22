@@ -175,7 +175,7 @@ export default function App() {
   }
 
   function addCartProduct(p: Product, qty = 1) {
-    setCart((c) => addToCart(c, { productId: p.id, name: p.name, price: Number(p.price), image: p.images?.[0] }, qty));
+    setCart((c) => addToCart(c, { productId: p.id, name: p.name, price: Number(p.price), image: p.images?.[0], isDigital: p.isDigital }, qty));
     toast.success("Added to cart");
   }
 
@@ -335,6 +335,7 @@ export default function App() {
           payzy={payzy}
           profile={profile}
           view={view}
+          products={products}
         />
       </div>
 

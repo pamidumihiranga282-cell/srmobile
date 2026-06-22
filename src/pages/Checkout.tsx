@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { CheckCircle2, MessageCircle, ShoppingBag } from "lucide-react";
 import type { CartState } from "@/lib/cart";
 import { cartSubtotal, computeDiscount } from "@/lib/cart";
-import type { PayHereSettings, PayzySettings, SiteSettings } from "@/lib/types";
+import type { PayHereSettings, PayzySettings, SiteSettings, Product } from "@/lib/types";
 import type { UserProfile } from "@/lib/firebase";
 import { Button, Card, Container, Divider, Input, Textarea } from "@/components/ui";
 import { createOrder } from "@/lib/api";
@@ -37,6 +37,7 @@ export function CheckoutPage(props: {
   payzy: PayzySettings;
   profile: UserProfile | null;
   view?: string;
+  products?: Product[];
 }) {
   const [name, setName] = useState(props.profile?.name ?? "");
   const [email, setEmail] = useState(props.profile?.email ?? "");
@@ -47,13 +48,31 @@ export function CheckoutPage(props: {
   const [notes, setNotes] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
+  const isDigitalCart = useMemo(() => {
+    if (!props.cart.items.length) return false;
+    return props.cart.items.every((item) => {
+      if (item.isDigital) return true;
+      const matchingProd = props.products?.find((p) => p.id === item.productId);
+      return matchingProd?.isDigital === true;
+    });
+  }, [props.cart.items, props.products]);
+
   const [paymentMethod, setPaymentMethod] = useState<
     "Card" | "Cash on Delivery" | "Bank Transfer" | "PayHere" | "Payzy"
   >("Cash on Delivery");
 
+  // Adjust payment method if COD or Card is selected but cart is digital
+  useEffect(() => {
+    if (isDigitalCart) {
+      if (paymentMethod === "Cash on Delivery" || paymentMethod === "Card") {
+        setPaymentMethod("PayHere");
+      }
+    }
+  }, [isDigitalCart, paymentMethod]);
+
   const subtotal = cartSubtotal(props.cart);
   const discount = computeDiscount(props.cart);
-  const delivery = props.settings.deliveryCharge ?? 500;
+  const delivery = isDigitalCart ? 0 : (props.settings.deliveryCharge ?? 500);
   const totalWithoutSurcharge = Math.max(0, subtotal - discount) + delivery;
   const isPayzy = paymentMethod === "Payzy";
   const payzySurcharge = isPayzy ? Math.round(totalWithoutSurcharge * 0.14) : 0;
@@ -82,7 +101,7 @@ export function CheckoutPage(props: {
       toast.error("Cart is empty");
       return;
     }
-    if (!name.trim() || !email.trim() || !phone.trim() || !address.trim() || !city.trim()) {
+    if (!name.trim() || !email.trim() || !phone.trim() || (!isDigitalCart && (!address.trim() || !city.trim()))) {
       toast.error("Please fill all required fields");
       return;
     }
@@ -104,9 +123,9 @@ export function CheckoutPage(props: {
         deliveryCharge: delivery,
         status: "pending" as const,
         trackingNumber: "",
-        shippingAddress: address,
-        city,
-        zip,
+        shippingAddress: isDigitalCart ? "Digital Delivery" : address,
+        city: isDigitalCart ? "Digital" : city,
+        zip: isDigitalCart ? "" : zip,
         paymentMethod,
         notes,
       };
@@ -116,24 +135,43 @@ export function CheckoutPage(props: {
       // Log for any future EmailJS / webhook integration
       console.log("[ORDER PLACED]", { orderId, ...orderPayload });
 
+      // Save placed info for success screen — copy items before clearing cart
+      const itemsCopy = props.cart.items.map((x) => ({ name: x.name, qty: x.qty, price: x.price }));
+      setPlaced({
+        orderId,
+        customerName: name,
+        customerPhone: phone,
+        total,
+        paymentMethod,
+        items: itemsCopy,
+      });
+
+      // Clear cart immediately
+      props.clearCart();
+
       // If PayHere selected, launch payment in a new tab
       if (paymentMethod === "PayHere") {
         if (!props.payhere.enabled) {
           toast.error("PayHere is not configured yet. Admin can enable it from Admin → PayHere Setup.");
         } else {
-          submitPayHerePayment({
-            settings: props.payhere,
-            orderId,
-            itemsLabel,
-            amount: total,
-            firstName: name.split(" ")[0] ?? name,
-            lastName: name.split(" ").slice(1).join(" ") || "-",
-            email,
-            phone,
-            address,
-            city,
-          });
-          toast("PayHere payment window opened.");
+          try {
+            submitPayHerePayment({
+              settings: props.payhere,
+              orderId,
+              itemsLabel,
+              amount: total,
+              firstName: name.split(" ")[0] ?? name,
+              lastName: name.split(" ").slice(1).join(" ") || "-",
+              email,
+              phone,
+              address: isDigitalCart ? "Digital Delivery" : address,
+              city: isDigitalCart ? "Digital" : city,
+            });
+            toast("PayHere payment window opened.");
+          } catch (payhereErr) {
+            console.error("PayHere integration error:", payhereErr);
+            toast.error("Failed to open PayHere payment page.");
+          }
         }
       }
 
@@ -142,33 +180,26 @@ export function CheckoutPage(props: {
         if (!props.payzy.enabled) {
           toast.error("Payzy is not configured yet. Admin can enable it from Admin → Payment Methods.");
         } else {
-          await submitPayzyPayment({
-            settings: props.payzy,
-            orderId,
-            amount: total,
-            firstName: name.split(" ")[0] ?? name,
-            lastName: name.split(" ").slice(1).join(" ") || "-",
-            email,
-            phone,
-            address,
-            city,
-            zip,
-          });
-          toast("Payzy payment window opened.");
+          try {
+            await submitPayzyPayment({
+              settings: props.payzy,
+              orderId,
+              amount: total,
+              firstName: name.split(" ")[0] ?? name,
+              lastName: name.split(" ").slice(1).join(" ") || "-",
+              email,
+              phone,
+              address: isDigitalCart ? "Digital Delivery" : address,
+              city: isDigitalCart ? "Digital" : city,
+              zip: isDigitalCart ? "N/A" : zip,
+            });
+            toast("Payzy payment window opened.");
+          } catch (payzyErr) {
+            console.error("Payzy integration error:", payzyErr);
+            toast.error("Failed to open Payzy payment page.");
+          }
         }
       }
-
-      // Save placed info for success screen — don't touch WhatsApp here
-      setPlaced({
-        orderId,
-        customerName: name,
-        customerPhone: phone,
-        total,
-        paymentMethod,
-        items: props.cart.items.map((x) => ({ name: x.name, qty: x.qty, price: x.price })),
-      });
-
-      props.clearCart();
     } catch (e: any) {
       toast.error(e?.message ?? "Failed to place order");
     } finally {
@@ -274,7 +305,9 @@ export function CheckoutPage(props: {
         <div className="mt-6 text-xs text-white/50">Home / Checkout</div>
         <div className="mt-4 grid gap-4 lg:grid-cols-[1fr_360px]">
           <Card className="p-4 sm:p-6">
-            <div className="text-sm font-semibold text-white">Delivery Details</div>
+            <div className="text-sm font-semibold text-white">
+              {isDigitalCart ? "Contact Information" : "Delivery Details"}
+            </div>
             <Divider className="my-3" />
             <div className="grid gap-3 sm:grid-cols-2">
               <div className="sm:col-span-2">
@@ -289,18 +322,22 @@ export function CheckoutPage(props: {
                 <div className="text-xs font-semibold text-white/70">Phone *</div>
                 <Input value={phone} onChange={setPhone} placeholder="0726306039" />
               </div>
-              <div className="sm:col-span-2">
-                <div className="text-xs font-semibold text-white/70">Address *</div>
-                <Input value={address} onChange={setAddress} placeholder="Street / Area" />
-              </div>
-              <div>
-                <div className="text-xs font-semibold text-white/70">City *</div>
-                <Input value={city} onChange={setCity} placeholder="Galle" />
-              </div>
-              <div>
-                <div className="text-xs font-semibold text-white/70">ZIP</div>
-                <Input value={zip} onChange={setZip} placeholder="" />
-              </div>
+              {!isDigitalCart && (
+                <>
+                  <div className="sm:col-span-2">
+                    <div className="text-xs font-semibold text-white/70">Address *</div>
+                    <Input value={address} onChange={setAddress} placeholder="Street / Area" />
+                  </div>
+                  <div>
+                    <div className="text-xs font-semibold text-white/70">City *</div>
+                    <Input value={city} onChange={setCity} placeholder="Galle" />
+                  </div>
+                  <div>
+                    <div className="text-xs font-semibold text-white/70">ZIP</div>
+                    <Input value={zip} onChange={setZip} placeholder="" />
+                  </div>
+                </>
+              )}
               <div className="sm:col-span-2">
                 <div className="text-xs font-semibold text-white/70">Notes</div>
                 <Textarea value={notes} onChange={setNotes} placeholder="Any special instructions..." rows={3} />
@@ -312,18 +349,20 @@ export function CheckoutPage(props: {
             <div className="text-sm font-semibold text-white">Payment Method</div>
             <div className="mt-2 grid gap-2">
               {/* Cash on Delivery */}
-              <label className="flex cursor-pointer items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.03] p-3 transition hover:bg-white/[0.06]">
-                <input
-                  type="radio"
-                  name="pm"
-                  checked={paymentMethod === "Cash on Delivery"}
-                  onChange={() => setPaymentMethod("Cash on Delivery")}
-                />
-                <div>
-                  <div className="text-sm font-semibold text-white">Cash on Delivery</div>
-                  <div className="text-xs text-white/50">Pay when you receive your order</div>
-                </div>
-              </label>
+              {!isDigitalCart && (
+                <label className="flex cursor-pointer items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.03] p-3 transition hover:bg-white/[0.06]">
+                  <input
+                    type="radio"
+                    name="pm"
+                    checked={paymentMethod === "Cash on Delivery"}
+                    onChange={() => setPaymentMethod("Cash on Delivery")}
+                  />
+                  <div>
+                    <div className="text-sm font-semibold text-white">Cash on Delivery</div>
+                    <div className="text-xs text-white/50">Pay when you receive your order</div>
+                  </div>
+                </label>
+              )}
 
               {/* Bank Transfer */}
               <label className="flex cursor-pointer items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.03] p-3 transition hover:bg-white/[0.06]">
@@ -340,18 +379,20 @@ export function CheckoutPage(props: {
               </label>
 
               {/* Card */}
-              <label className="flex cursor-pointer items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.03] p-3 transition hover:bg-white/[0.06]">
-                <input
-                  type="radio"
-                  name="pm"
-                  checked={paymentMethod === "Card"}
-                  onChange={() => setPaymentMethod("Card")}
-                />
-                <div>
-                  <div className="text-sm font-semibold text-white">Card</div>
-                  <div className="text-xs text-white/50">Debit / credit card payment</div>
-                </div>
-              </label>
+              {!isDigitalCart && (
+                <label className="flex cursor-pointer items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.03] p-3 transition hover:bg-white/[0.06]">
+                  <input
+                    type="radio"
+                    name="pm"
+                    checked={paymentMethod === "Card"}
+                    onChange={() => setPaymentMethod("Card")}
+                  />
+                  <div>
+                    <div className="text-sm font-semibold text-white">Card</div>
+                    <div className="text-xs text-white/50">Debit / credit card payment</div>
+                  </div>
+                </label>
+              )}
 
               {/* PayHere */}
               <label className="flex cursor-pointer items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.03] p-3 transition hover:bg-white/[0.06]">

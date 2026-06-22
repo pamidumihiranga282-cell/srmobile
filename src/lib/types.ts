@@ -17,6 +17,7 @@ export type Product = {
   // Optional fields to support rating filter/sort.
   rating?: number;
   ratingCount?: number;
+  isDigital?: boolean;
 };
 
 export type OrderItem = {
@@ -45,6 +46,7 @@ export type Order = {
   orderDate?: Timestamp;
   paymentMethod: "Card" | "Cash on Delivery" | "Bank Transfer" | "PayHere" | "Payzy";
   notes: string;
+  digitalCredentials?: string;
 };
 
 export type Testimonial = {

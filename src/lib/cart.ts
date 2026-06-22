@@ -4,6 +4,7 @@ export type CartItem = {
   price: number;
   qty: number;
   image?: string;
+  isDigital?: boolean;
 };
 
 export type CartState = {
