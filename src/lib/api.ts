@@ -18,7 +18,7 @@ import {
 } from "firebase/firestore";
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import { db, storage, type UserProfile } from "./firebase";
-import type { Order, OrderStatus, PayHereSettings, Product, SiteSettings, Testimonial } from "./types";
+import type { Order, OrderStatus, PayHereSettings, PayzySettings, Product, SiteSettings, Testimonial } from "./types";
 
 export function settingsRef() {
   return doc(db, "site_settings", "settings");
@@ -26,6 +26,10 @@ export function settingsRef() {
 
 export function payhereRef() {
   return doc(db, "site_settings", "payhere");
+}
+
+export function payzyRef() {
+  return doc(db, "site_settings", "payzy");
 }
 
 export function subscribeSettings(cb: (s: SiteSettings) => void): Unsubscribe {
@@ -64,6 +68,25 @@ export function subscribePayHere(cb: (s: PayHereSettings) => void): Unsubscribe 
 
 export async function updatePayHere(patch: Partial<PayHereSettings>) {
   await setDoc(payhereRef(), { ...patch, updatedAt: serverTimestamp() }, { merge: true });
+}
+
+export function subscribePayzy(cb: (s: PayzySettings) => void): Unsubscribe {
+  return onSnapshot(payzyRef(), (snap) => {
+    const data = (snap.data() ?? {}) as Partial<PayzySettings>;
+    cb({
+      enabled: data.enabled ?? false,
+      shopId: data.shopId ?? "",
+      secretKey: data.secretKey ?? "",
+      sandbox: data.sandbox ?? true,
+      returnUrl: data.returnUrl ?? window.location.href,
+      cancelUrl: data.cancelUrl ?? window.location.href,
+      backendUrl: data.backendUrl ?? "",
+    });
+  });
+}
+
+export async function updatePayzy(patch: Partial<PayzySettings>) {
+  await setDoc(payzyRef(), { ...patch, updatedAt: serverTimestamp() }, { merge: true });
 }
 
 export function subscribeProducts(cb: (items: Product[]) => void): Unsubscribe {

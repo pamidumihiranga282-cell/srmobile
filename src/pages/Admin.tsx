@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import type { Order, PayHereSettings, Product, SiteSettings, Testimonial } from "@/lib/types";
+import type { Order, PayHereSettings, PayzySettings, Product, SiteSettings, Testimonial } from "@/lib/types";
 import type { UserProfile } from "@/lib/firebase";
 import {
   createProduct,
@@ -13,6 +13,7 @@ import {
   updateOrder,
   updateOrderStatus,
   updatePayHere,
+  updatePayzy,
   updateProduct,
   updateSettings,
   uploadProductImages,
@@ -30,10 +31,11 @@ export function AdminPage(props: {
   products: Product[];
   settings: SiteSettings;
   payhere: PayHereSettings;
+  payzy: PayzySettings;
   profile: UserProfile;
 }) {
   const [tab, setTab] = useState<
-    "products" | "orders" | "users" | "settings" | "home" | "newsletter" | "payhere" | "messages"
+    "products" | "orders" | "users" | "settings" | "home" | "newsletter" | "payment_method" | "messages"
   >("products");
 
   // Orders
@@ -328,6 +330,42 @@ export function AdminPage(props: {
     }
   }
 
+  // Payzy
+  const [pzyEnabled, setPzyEnabled] = useState(props.payzy.enabled);
+  const [pzyShopId, setPzyShopId] = useState(props.payzy.shopId);
+  const [pzySecret, setPzySecret] = useState(props.payzy.secretKey);
+  const [pzySandbox, setPzySandbox] = useState(props.payzy.sandbox);
+  const [pzyReturn, setPzyReturn] = useState(props.payzy.returnUrl);
+  const [pzyCancel, setPzyCancel] = useState(props.payzy.cancelUrl);
+  const [pzyBackend, setPzyBackend] = useState(props.payzy.backendUrl);
+
+  useEffect(() => {
+    setPzyEnabled(props.payzy.enabled);
+    setPzyShopId(props.payzy.shopId);
+    setPzySecret(props.payzy.secretKey);
+    setPzySandbox(props.payzy.sandbox);
+    setPzyReturn(props.payzy.returnUrl);
+    setPzyCancel(props.payzy.cancelUrl);
+    setPzyBackend(props.payzy.backendUrl);
+  }, [props.payzy]);
+
+  async function savePayzy() {
+    try {
+      await updatePayzy({
+        enabled: pzyEnabled,
+        shopId: pzyShopId,
+        secretKey: pzySecret,
+        sandbox: pzySandbox,
+        returnUrl: pzyReturn,
+        cancelUrl: pzyCancel,
+        backendUrl: pzyBackend,
+      });
+      toast.success("Payzy settings saved");
+    } catch (e: any) {
+      toast.error(e?.message ?? "Failed");
+    }
+  }
+
   const productOptions = useMemo(() => props.products.map((p) => ({ id: p.id, label: `${p.name} (${p.brand} ${p.model})` })), [props.products]);
 
   return (
@@ -343,7 +381,7 @@ export function AdminPage(props: {
             ["settings", "Site Settings"],
             ["home", "Homepage Content"],
             ["newsletter", "Newsletter"],
-            ["payhere", "PayHere Setup"],
+            ["payment_method", "Payment Methods"],
           ].map(([k, label]) => (
             <button
               key={k}
@@ -669,52 +707,102 @@ export function AdminPage(props: {
             </Card>
           ) : null}
 
-          {tab === "payhere" ? (
-            <Card className="p-4 sm:p-6">
-              <div className="text-sm font-semibold text-white">PayHere Setup (Separate Page)</div>
-              <p className="mt-1 text-sm text-white/60">
-                Configure PayHere merchant details. For best security, generate the hash on a backend.
-              </p>
-              <Divider className="my-4" />
-              <label className="flex items-center gap-2 text-sm text-white/80">
-                <input type="checkbox" checked={phEnabled} onChange={(e) => setPhEnabled(e.target.checked)} /> Enable PayHere
-              </label>
+          {tab === "payment_method" ? (
+            <div className="grid gap-6 lg:grid-cols-2">
+              {/* PayHere Setup */}
+              <Card className="p-4 sm:p-6 h-fit">
+                <div className="text-sm font-semibold text-white">PayHere Setup</div>
+                <p className="mt-1 text-xs text-white/60">
+                  Configure PayHere merchant details. For best security, generate the hash on a backend.
+                </p>
+                <Divider className="my-4" />
+                <label className="flex items-center gap-2 text-sm text-white/80">
+                  <input type="checkbox" checked={phEnabled} onChange={(e) => setPhEnabled(e.target.checked)} /> Enable PayHere
+                </label>
 
-              <div className="mt-3 grid gap-3 sm:grid-cols-2">
-                <div>
-                  <div className="text-xs font-semibold text-white/70">Merchant ID</div>
-                  <Input value={phMerchantId} onChange={setPhMerchantId} />
-                </div>
-                <div>
-                  <div className="text-xs font-semibold text-white/70">Merchant Secret</div>
-                  <Input value={phSecret} onChange={setPhSecret} />
-                </div>
-                <div className="sm:col-span-2">
-                  <label className="flex items-center gap-2 text-sm text-white/80">
-                    <input type="checkbox" checked={phSandbox} onChange={(e) => setPhSandbox(e.target.checked)} /> Use Sandbox
-                  </label>
-                </div>
-                <div className="sm:col-span-2">
-                  <div className="text-xs font-semibold text-white/70">Return URL</div>
-                  <Input value={phReturn} onChange={setPhReturn} />
-                </div>
-                <div className="sm:col-span-2">
-                  <div className="text-xs font-semibold text-white/70">Cancel URL</div>
-                  <Input value={phCancel} onChange={setPhCancel} />
-                </div>
-                <div className="sm:col-span-2">
-                  <div className="text-xs font-semibold text-white/70">Notify URL</div>
-                  <Input value={phNotify} onChange={setPhNotify} />
-                  <div className="mt-1 text-xs text-white/40">
-                    PayHere sends payment status to notify_url (server callback). For static hosting, this must point to a backend.
+                <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                  <div>
+                    <div className="text-xs font-semibold text-white/70">Merchant ID</div>
+                    <Input value={phMerchantId} onChange={setPhMerchantId} />
+                  </div>
+                  <div>
+                    <div className="text-xs font-semibold text-white/70">Merchant Secret</div>
+                    <Input value={phSecret} onChange={setPhSecret} />
+                  </div>
+                  <div className="sm:col-span-2">
+                    <label className="flex items-center gap-2 text-sm text-white/80">
+                      <input type="checkbox" checked={phSandbox} onChange={(e) => setPhSandbox(e.target.checked)} /> Use Sandbox
+                    </label>
+                  </div>
+                  <div className="sm:col-span-2">
+                    <div className="text-xs font-semibold text-white/70">Return URL</div>
+                    <Input value={phReturn} onChange={setPhReturn} />
+                  </div>
+                  <div className="sm:col-span-2">
+                    <div className="text-xs font-semibold text-white/70">Cancel URL</div>
+                    <Input value={phCancel} onChange={setPhCancel} />
+                  </div>
+                  <div className="sm:col-span-2">
+                    <div className="text-xs font-semibold text-white/70">Notify URL</div>
+                    <Input value={phNotify} onChange={setPhNotify} />
+                    <div className="mt-1 text-xs text-white/40">
+                      PayHere sends payment status to notify_url (server callback).
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              <Button onClick={savePayHere} className="mt-4">
-                Save PayHere
-              </Button>
-            </Card>
+                <Button onClick={savePayHere} className="mt-4">
+                  Save PayHere
+                </Button>
+              </Card>
+
+              {/* Payzy Setup */}
+              <Card className="p-4 sm:p-6 h-fit">
+                <div className="text-sm font-semibold text-white">Payzy Setup (Installment Payment)</div>
+                <p className="mt-1 text-xs text-white/60">
+                  Configure Payzy shop credentials. Add 14% surcharge fee and support 4-month splits.
+                </p>
+                <Divider className="my-4" />
+                <label className="flex items-center gap-2 text-sm text-white/80">
+                  <input type="checkbox" checked={pzyEnabled} onChange={(e) => setPzyEnabled(e.target.checked)} /> Enable Payzy
+                </label>
+
+                <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                  <div>
+                    <div className="text-xs font-semibold text-white/70">Shop ID</div>
+                    <Input value={pzyShopId} onChange={setPzyShopId} />
+                  </div>
+                  <div>
+                    <div className="text-xs font-semibold text-white/70">Secret / Hash Key</div>
+                    <Input value={pzySecret} onChange={setPzySecret} />
+                  </div>
+                  <div className="sm:col-span-2">
+                    <label className="flex items-center gap-2 text-sm text-white/80">
+                      <input type="checkbox" checked={pzySandbox} onChange={(e) => setPzySandbox(e.target.checked)} /> Use Sandbox
+                    </label>
+                  </div>
+                  <div className="sm:col-span-2">
+                    <div className="text-xs font-semibold text-white/70">Return URL</div>
+                    <Input value={pzyReturn} onChange={setPzyReturn} />
+                  </div>
+                  <div className="sm:col-span-2">
+                    <div className="text-xs font-semibold text-white/70">Cancel URL</div>
+                    <Input value={pzyCancel} onChange={setPzyCancel} />
+                  </div>
+                  <div className="sm:col-span-2">
+                    <div className="text-xs font-semibold text-white/70">Backend Proxy URL (Optional)</div>
+                    <Input value={pzyBackend} onChange={setPzyBackend} placeholder="http://localhost:3000/api/externalData" />
+                    <div className="mt-1 text-xs text-white/40">
+                      Specifying a proxy server forwards requests to bypass browser CORS policies securely.
+                    </div>
+                  </div>
+                </div>
+
+                <Button onClick={savePayzy} className="mt-4">
+                  Save Payzy
+                </Button>
+              </Card>
+            </div>
           ) : null}
         </div>
       </Container>

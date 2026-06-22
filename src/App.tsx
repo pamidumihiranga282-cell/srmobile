@@ -16,10 +16,11 @@ import { ensureUserDoc, logout, subscribeAuth, type UserProfile } from "@/lib/fi
 import {
   addNewsletter,
   subscribePayHere,
+  subscribePayzy,
   subscribeProducts,
   subscribeSettings,
 } from "@/lib/api";
-import type { PayHereSettings, Product, SiteSettings } from "@/lib/types";
+import type { PayHereSettings, PayzySettings, Product, SiteSettings } from "@/lib/types";
 import {
   addToCart,
   cartCount,
@@ -65,6 +66,16 @@ const DEFAULT_PAYHERE: PayHereSettings = {
   notifyUrl: typeof window !== "undefined" ? window.location.href : "",
 };
 
+const DEFAULT_PAYZY: PayzySettings = {
+  enabled: false,
+  shopId: "2",
+  secretKey: "$2b$12$82C876HIXARFRAF8iQB6JO2C5Zc9NeEZqCwcLY2eJe2klTw.EGvWy",
+  sandbox: true,
+  returnUrl: typeof window !== "undefined" ? window.location.origin + "/#account" : "",
+  cancelUrl: typeof window !== "undefined" ? window.location.origin + "/#checkout" : "",
+  backendUrl: "http://localhost:3000/api/externalData",
+};
+
 export default function App() {
   const { lang, setLang, t } = useI18n();
   const { view, setView } = useHashView();
@@ -77,6 +88,7 @@ export default function App() {
 
   const [settings, setSettings] = useState<SiteSettings>(DEFAULT_SETTINGS);
   const [payhere, setPayhere] = useState<PayHereSettings>(DEFAULT_PAYHERE);
+  const [payzy, setPayzy] = useState<PayzySettings>(DEFAULT_PAYZY);
 
   const [products, setProducts] = useState<Product[]>([]);
   const [productsLoading, setProductsLoading] = useState(true);
@@ -137,6 +149,7 @@ export default function App() {
 
     const unsubSettings = subscribeSettings(setSettings);
     const unsubPayHere = subscribePayHere(setPayhere);
+    const unsubPayzy = subscribePayzy(setPayzy);
 
     const unsubProducts = subscribeProducts((arr) => {
       setProducts(arr);
@@ -147,6 +160,7 @@ export default function App() {
       unsubAuth();
       unsubSettings();
       unsubPayHere();
+      unsubPayzy();
       unsubProducts();
     };
   }, []);
@@ -318,6 +332,7 @@ export default function App() {
           clearCart={() => setCart(clearCart())}
           settings={settings}
           payhere={payhere}
+          payzy={payzy}
           profile={profile}
           view={view}
         />
@@ -349,7 +364,7 @@ export default function App() {
 
       <div className={show("admin")}>
         {isAdmin && profile ? (
-          <AdminPage products={products} settings={settings} payhere={payhere} profile={profile} />
+          <AdminPage products={products} settings={settings} payhere={payhere} payzy={payzy} profile={profile} />
         ) : (
           <Container>
             <div className="mt-10 rounded-2xl border border-white/10 bg-white/[0.03] p-6 text-white/70">

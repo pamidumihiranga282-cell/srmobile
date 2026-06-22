@@ -43,7 +43,7 @@ export type Order = {
   city: string;
   zip: string;
   orderDate?: Timestamp;
-  paymentMethod: "Card" | "Cash on Delivery" | "Bank Transfer" | "PayHere";
+  paymentMethod: "Card" | "Cash on Delivery" | "Bank Transfer" | "PayHere" | "Payzy";
   notes: string;
 };
 
@@ -72,3 +72,14 @@ export type PayHereSettings = {
   cancelUrl: string;
   notifyUrl: string;
 };
+
+export type PayzySettings = {
+  enabled: boolean;
+  shopId: string;
+  secretKey: string;
+  sandbox: boolean;
+  returnUrl: string;
+  cancelUrl: string;
+  backendUrl: string;
+};
+

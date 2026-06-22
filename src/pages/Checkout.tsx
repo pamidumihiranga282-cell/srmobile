@@ -3,12 +3,13 @@ import { motion } from "framer-motion";
 import { CheckCircle2, MessageCircle, ShoppingBag } from "lucide-react";
 import type { CartState } from "@/lib/cart";
 import { cartSubtotal, computeDiscount } from "@/lib/cart";
-import type { PayHereSettings, SiteSettings } from "@/lib/types";
+import type { PayHereSettings, PayzySettings, SiteSettings } from "@/lib/types";
 import type { UserProfile } from "@/lib/firebase";
 import { Button, Card, Container, Divider, Input, Textarea } from "@/components/ui";
 import { createOrder } from "@/lib/api";
 import toast from "react-hot-toast";
 import { submitPayHerePayment } from "@/lib/payhere";
+import { submitPayzyPayment } from "@/lib/payzy";
 
 /** Normalise any LK phone number to international 94x format for wa.me */
 function toWaPhone(raw: string) {
@@ -33,13 +34,18 @@ export function CheckoutPage(props: {
   clearCart: () => void;
   settings: SiteSettings;
   payhere: PayHereSettings;
+  payzy: PayzySettings;
   profile: UserProfile | null;
   view?: string;
 }) {
   const subtotal = cartSubtotal(props.cart);
   const discount = computeDiscount(props.cart);
   const delivery = props.settings.deliveryCharge ?? 500;
-  const total = Math.max(0, subtotal - discount) + delivery;
+  const totalWithoutSurcharge = Math.max(0, subtotal - discount) + delivery;
+  const isPayzy = paymentMethod === "Payzy";
+  const payzySurcharge = isPayzy ? Math.round(totalWithoutSurcharge * 0.14) : 0;
+  const total = totalWithoutSurcharge + payzySurcharge;
+  const payzyMonthly = isPayzy ? Math.round(total / 4) : 0;
 
   const [name, setName] = useState(props.profile?.name ?? "");
   const [email, setEmail] = useState(props.profile?.email ?? "");
@@ -51,7 +57,7 @@ export function CheckoutPage(props: {
   const [submitting, setSubmitting] = useState(false);
 
   const [paymentMethod, setPaymentMethod] = useState<
-    "Card" | "Cash on Delivery" | "Bank Transfer" | "PayHere"
+    "Card" | "Cash on Delivery" | "Bank Transfer" | "PayHere" | "Payzy"
   >("Cash on Delivery");
 
   // Holds the confirmed order info for the success screen
@@ -128,6 +134,27 @@ export function CheckoutPage(props: {
             city,
           });
           toast("PayHere payment window opened.");
+        }
+      }
+
+      // If Payzy selected, launch payment in a new tab
+      if (paymentMethod === "Payzy") {
+        if (!props.payzy.enabled) {
+          toast.error("Payzy is not configured yet. Admin can enable it from Admin → Payment Methods.");
+        } else {
+          await submitPayzyPayment({
+            settings: props.payzy,
+            orderId,
+            amount: total,
+            firstName: name.split(" ")[0] ?? name,
+            lastName: name.split(" ").slice(1).join(" ") || "-",
+            email,
+            phone,
+            address,
+            city,
+            zip,
+          });
+          toast("Payzy payment window opened.");
         }
       }
 
@@ -356,6 +383,40 @@ export function CheckoutPage(props: {
                   PayHere is not configured yet. Admin can enable it from Admin → PayHere Setup.
                 </div>
               ) : null}
+
+              {/* Payzy */}
+              <label className="flex cursor-pointer items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.03] p-3 transition hover:bg-white/[0.06]">
+                <input
+                  type="radio"
+                  name="pm"
+                  checked={paymentMethod === "Payzy"}
+                  onChange={() => setPaymentMethod("Payzy")}
+                />
+                <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-white/10">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="2" y="5" width="20" height="14" rx="3" stroke="#0073fe" strokeWidth="1.8" />
+                    <path d="M6 12H18" stroke="#ff6b00" strokeWidth="1.8" strokeLinecap="round" />
+                    <path d="M12 9V15" stroke="white" strokeWidth="1.8" strokeLinecap="round" />
+                  </svg>
+                </span>
+                <div className="flex-1">
+                  <div className="flex items-center gap-2">
+                    <div className="text-sm font-semibold text-white">Payzy (Pay in 4 Months)</div>
+                    <span className="rounded bg-[#0073fe]/20 px-1.5 py-0.5 text-[10px] font-bold text-[#0073fe]">
+                      14% Fee
+                    </span>
+                  </div>
+                  <div className="text-xs text-white/50">
+                    Split payment into 4 monthly installments of Rs. {payzyMonthly.toLocaleString()}
+                  </div>
+                </div>
+              </label>
+
+              {paymentMethod === "Payzy" && !props.payzy.enabled ? (
+                <div className="rounded-2xl border border-amber-500/30 bg-amber-500/10 p-3 text-xs text-amber-200">
+                  Payzy is not configured yet. Admin can enable it from Admin → Payment Methods.
+                </div>
+              ) : null}
             </div>
 
             <Button onClick={placeOrder} disabled={submitting} className="mt-5 w-full">
@@ -384,10 +445,22 @@ export function CheckoutPage(props: {
                 <span>Delivery</span>
                 <span>Rs. {delivery.toLocaleString()}</span>
               </div>
+              {isPayzy && (
+                <div className="flex items-center justify-between text-[#0073fe]">
+                  <span>Payzy Surcharge (14%)</span>
+                  <span>Rs. {payzySurcharge.toLocaleString()}</span>
+                </div>
+              )}
               <div className="flex items-center justify-between border-t border-white/10 pt-2 text-white">
                 <span className="font-semibold">Total</span>
                 <span className="font-[Poppins] font-extrabold">Rs. {total.toLocaleString()}</span>
               </div>
+              {isPayzy && (
+                <div className="flex items-center justify-between text-xs text-white/50 border-t border-white/5 pt-1">
+                  <span>Installments (4 Months)</span>
+                  <span>Rs. {payzyMonthly.toLocaleString()} / month</span>
+                </div>
+              )}
             </div>
 
             <Divider className="my-3" />
