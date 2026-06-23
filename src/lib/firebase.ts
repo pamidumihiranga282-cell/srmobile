@@ -23,13 +23,13 @@ import { getStorage } from "firebase/storage";
 
 // IMPORTANT: Use exactly this config (provided by the client)
 export const firebaseConfig = {
-  apiKey: "AIzaSyBgLGLuQEog9uJ1BF-4aKR0WEiZHPSO46M",
-  authDomain: "myweb-7ecb4.firebaseapp.com",
-  projectId: "myweb-7ecb4",
-  storageBucket: "myweb-7ecb4.firebasestorage.app",
-  messagingSenderId: "1027238820127",
-  appId: "1:1027238820127:web:7b3d49b74d8151ec53582a",
-  measurementId: "G-81JY5FKV0E",
+  apiKey: "AIzaSyDaKFHWjMFfabGw0l1NILs_kb8hF5FCRhU",
+  authDomain: "srmobile-6091e.firebaseapp.com",
+  projectId: "srmobile-6091e",
+  storageBucket: "srmobile-6091e.firebasestorage.app",
+  messagingSenderId: "977403967748",
+  appId: "1:977403967748:web:a90a347b40126ec50f3851",
+  measurementId: "G-WLRJ826P2L"
 };
 
 export const app = initializeApp(firebaseConfig);
