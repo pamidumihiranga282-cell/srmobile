@@ -129,8 +129,9 @@ export function subscribeProducts(cb: (items: Product[]) => void): Unsubscribe {
 }
 
 export async function createProduct(payload: Omit<Product, "id">) {
+  const clean = Object.fromEntries(Object.entries(payload).filter(([, v]) => v !== undefined));
   const ref = await addDoc(collection(db, "products"), {
-    ...payload,
+    ...clean,
     createdAt: serverTimestamp(),
   });
   return ref.id;

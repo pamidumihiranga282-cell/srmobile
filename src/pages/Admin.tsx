@@ -279,7 +279,8 @@ export function AdminPage(props: {
       toast.success(editing ? "Product updated" : "Product created");
       setProductOpen(false);
     } catch (e: any) {
-      toast.error(e?.message ?? "Failed");
+      console.error("Error saving product:", e);
+      toast.error(e?.message ?? "Failed to save product");
     }
   }
 
