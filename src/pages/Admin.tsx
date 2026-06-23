@@ -117,10 +117,11 @@ export function AdminPage(props: {
   const [pDesc, setPDesc] = useState("");
   const [pSpecs, setPSpecs] = useState("");
   const [pCompat, setPCompat] = useState("");
-  const [pFiles, setPFiles] = useState<File[]>([]);
   const [pImages, setPImages] = useState<string[]>([]);
   const [pIsDigital, setPIsDigital] = useState(false);
   const [pSaving, setPSaving] = useState(false);
+  const [pUrlInput, setPUrlInput] = useState("");
+  const [pImgLoading, setPImgLoading] = useState(false);
 
   const dynamicCategories = useMemo(() => {
     const defaults = ["Screen", "Battery", "Accessories", "Repair Tools", "Charging", "Unlock Tools on Rent"];
@@ -130,17 +131,38 @@ export function AdminPage(props: {
   }, [props.products]);
 
   const [selectedCategory, setSelectedCategory] = useState("");
-  const [filePreviews, setFilePreviews] = useState<string[]>([]);
 
-  useEffect(() => {
-    if (!pFiles.length) {
-      setFilePreviews([]);
-      return;
+  // Convert selected image files to base64 data URLs immediately (no Firebase Storage needed)
+  async function handleImageFiles(files: File[]) {
+    if (!files.length) return;
+    setPImgLoading(true);
+    try {
+      const results = await Promise.all(
+        files.map(
+          (f) =>
+            new Promise<string>((resolve, reject) => {
+              const reader = new FileReader();
+              reader.onload = () => resolve(reader.result as string);
+              reader.onerror = () => reject(new Error("Failed to read " + f.name));
+              reader.readAsDataURL(f);
+            })
+        )
+      );
+      setPImages((prev) => [...prev, ...results]);
+    } catch (err: any) {
+      toast.error("Image read error: " + (err?.message ?? "unknown"));
+    } finally {
+      setPImgLoading(false);
     }
-    const urls = pFiles.map((f) => URL.createObjectURL(f));
-    setFilePreviews(urls);
-    return () => urls.forEach((url) => URL.revokeObjectURL(url));
-  }, [pFiles]);
+  }
+
+  function addImageByUrl() {
+    const url = pUrlInput.trim();
+    if (!url) return toast.error("Enter a valid image URL");
+    if (!url.startsWith("http") && !url.startsWith("data:")) return toast.error("URL must start with http");
+    setPImages((prev) => [...prev, url]);
+    setPUrlInput("");
+  }
 
   // Order edit modal
   const [orderOpen, setOrderOpen] = useState(false);
@@ -211,8 +233,8 @@ export function AdminPage(props: {
     setPSpecs("");
     setPCompat("");
     setPImages([]);
-    setPFiles([]);
     setPIsDigital(false);
+    setPUrlInput("");
     setSelectedCategory("");
     setProductOpen(true);
   }
@@ -229,8 +251,8 @@ export function AdminPage(props: {
     setPSpecs(p.specs);
     setPCompat((p.compatibility ?? []).join(", "));
     setPImages(p.images ?? []);
-    setPFiles([]);
     setPIsDigital(!!p.isDigital);
+    setPUrlInput("");
     if (p.partType) {
       if (dynamicCategories.includes(p.partType)) {
         setSelectedCategory(p.partType);
@@ -253,7 +275,7 @@ export function AdminPage(props: {
 
       let productId = editing?.id;
 
-      // Step 1: Create or update product (with existing images already)
+      // All images are already in pImages (base64 or URLs) — save directly to Firestore
       const payload = {
         name: pName.trim(),
         brand: pBrand.trim(),
@@ -278,25 +300,7 @@ export function AdminPage(props: {
         await updateProduct(productId, payload);
       }
 
-      // Step 2: Upload new image files and merge with existing
-      if (pFiles.length) {
-        const toastId = toast.loading("Uploading images...");
-        try {
-          const urls = await uploadProductImages(productId, pFiles);
-          const merged = [...pImages, ...urls];
-          await updateProduct(productId, { images: merged } as any);
-          toast.dismiss(toastId);
-        } catch (uploadErr: any) {
-          toast.dismiss(toastId);
-          console.error("Image upload error:", uploadErr);
-          toast.error("Product saved but image upload failed: " + (uploadErr?.message ?? "Check Firebase Storage rules."));
-          setPSaving(false);
-          setProductOpen(false);
-          return;
-        }
-      }
-
-      toast.success(editing ? "Product updated" : "Product created!");
+      toast.success(editing ? "Product updated!" : "Product created!");
       setProductOpen(false);
     } catch (e: any) {
       console.error("Error saving product:", e);
@@ -519,14 +523,15 @@ export function AdminPage(props: {
               <Divider className="my-3" />
               {ordersLoading ? <Spinner label="Loading orders..." /> : null}
               <div className="overflow-auto">
-                <table className="min-w-[1100px] w-full text-left text-sm">
+                <table className="min-w-[1250px] w-full text-left text-sm">
                   <thead className="text-xs text-white/60">
                     <tr>
                       <th className="py-2">Order</th>
                       <th>Customer</th>
                       <th>Total</th>
                       <th>Status</th>
-                      <th>Tracking</th>
+                      <th>Tracking / Slip</th>
+                      <th>Digital Details</th>
                       <th className="text-right">Actions</th>
                     </tr>
                   </thead>
@@ -940,17 +945,20 @@ export function AdminPage(props: {
             <div className="text-xs font-semibold text-white/70">Specs</div>
             <Textarea value={pSpecs} onChange={setPSpecs} rows={4} />
           </div>
-          {pImages.length > 0 && (
-            <div>
-              <div className="text-xs font-semibold text-white/70">Current Images</div>
-              <div className="mt-2 flex flex-wrap gap-2">
+          {/* Images section */}
+          <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-3 space-y-3">
+            <div className="text-xs font-bold text-white/70 uppercase tracking-wide">Product Images</div>
+
+            {/* Current images grid */}
+            {pImages.length > 0 && (
+              <div className="flex flex-wrap gap-2">
                 {pImages.map((url, idx) => (
-                  <div key={url} className="relative h-16 w-16 overflow-hidden rounded-xl border border-white/10 bg-white/5">
-                    <img src={url} alt="product" className="h-full w-full object-cover" />
+                  <div key={idx} className="relative h-20 w-20 overflow-hidden rounded-xl border border-white/10 bg-white/5">
+                    <img src={url} alt="product" className="h-full w-full object-cover" onError={(e) => { (e.target as any).style.opacity = '0.3'; }} />
                     <button
                       type="button"
                       onClick={() => setPImages((prev) => prev.filter((_, i) => i !== idx))}
-                      className="absolute right-1 top-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white hover:bg-red-600 transition"
+                      className="absolute right-1 top-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white hover:bg-red-600 transition shadow"
                       title="Remove image"
                     >
                       ✕
@@ -958,41 +966,62 @@ export function AdminPage(props: {
                   </div>
                 ))}
               </div>
-            </div>
-          )}
-          <div>
-            <div className="text-xs font-semibold text-white/70">Images (upload to Firebase Storage)</div>
-            <input
-              type="file"
-              multiple
-              accept="image/*"
-              onChange={(e) => setPFiles(Array.from(e.target.files ?? []))}
-              className="block w-full text-sm text-white/70 file:mr-4 file:rounded-xl file:border-0 file:bg-white/10 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white hover:file:bg-white/15"
-            />
-            <div className="mt-1 text-xs text-white/40">Select multiple images. They will be uploaded and saved to product.images[]</div>
-          </div>
-          {filePreviews.length > 0 && (
+            )}
+            {pImages.length === 0 && (
+              <div className="rounded-xl border border-dashed border-white/20 bg-white/[0.02] p-4 text-center text-xs text-white/40">
+                No images added yet. Use options below to add images.
+              </div>
+            )}
+
+            {/* Option 1: Upload from device */}
             <div>
-              <div className="text-xs font-semibold text-[#00b4d8]">Selected Previews (Will be uploaded)</div>
-              <div className="mt-2 flex flex-wrap gap-2">
-                {filePreviews.map((url, idx) => (
-                  <div key={url} className="relative h-16 w-16 overflow-hidden rounded-xl border border-[#00b4d8]/30 bg-white/5">
-                    <img src={url} alt="selected preview" className="h-full w-full object-cover" />
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setPFiles((prev) => prev.filter((_, i) => i !== idx));
-                      }}
-                      className="absolute right-1 top-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white hover:bg-red-600 transition"
-                      title="Remove image"
-                    >
-                      ✕
-                    </button>
+              <div className="text-xs font-semibold text-white/60 mb-1.5">📁 Upload from Device</div>
+              <div className="flex items-center gap-2">
+                <label className="flex-1 cursor-pointer">
+                  <div className={`rounded-xl border border-white/10 bg-white/5 px-3 py-2.5 text-sm text-white/60 hover:bg-white/10 transition text-center ${
+                    pImgLoading ? 'opacity-50 cursor-wait' : ''
+                  }`}>
+                    {pImgLoading ? "Processing images..." : "Choose image files"}
                   </div>
-                ))}
+                  <input
+                    type="file"
+                    multiple
+                    accept="image/*"
+                    disabled={pImgLoading}
+                    className="hidden"
+                    onChange={(e) => {
+                      const files = Array.from(e.target.files ?? []);
+                      if (files.length) handleImageFiles(files);
+                      e.target.value = ""; // reset so same file can be re-added
+                    }}
+                  />
+                </label>
+              </div>
+              <div className="mt-1 text-xs text-white/30">Images are saved directly — no Storage rules needed.</div>
+            </div>
+
+            {/* Option 2: Paste URL */}
+            <div>
+              <div className="text-xs font-semibold text-white/60 mb-1.5">🔗 Paste Image URL</div>
+              <div className="flex gap-2">
+                <input
+                  type="url"
+                  value={pUrlInput}
+                  onChange={(e) => setPUrlInput(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addImageByUrl(); } }}
+                  placeholder="https://example.com/image.jpg"
+                  className="flex-1 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white placeholder-white/30 outline-none focus:border-[#00b4d8]/50 focus:bg-white/10 transition"
+                />
+                <button
+                  type="button"
+                  onClick={addImageByUrl}
+                  className="rounded-xl bg-[#00b4d8]/20 px-3 py-2 text-sm font-semibold text-[#00b4d8] hover:bg-[#00b4d8]/30 transition"
+                >
+                  Add
+                </button>
               </div>
             </div>
-          )}
+          </div>
 
           <div className="flex justify-end gap-2 pt-2">
             <Button variant="secondary" onClick={() => !pSaving && setProductOpen(false)} disabled={pSaving}>
@@ -1088,6 +1117,20 @@ export function AdminPage(props: {
             <div className="text-xs font-semibold text-white/70">Order Notes</div>
             <Textarea value={oNotes} onChange={setONotes} rows={3} />
           </div>
+          {editingOrder && editingOrder.paymentMethod === "Bank Transfer" && editingOrder.bankTransferSlip && (
+            <div>
+              <div className="text-xs font-semibold text-white/70">Payment Slip</div>
+              <div className="mt-1.5">
+                <a href={editingOrder.bankTransferSlip} target="_blank" rel="noreferrer" className="inline-block hover:opacity-95 transition">
+                  <img
+                    src={editingOrder.bankTransferSlip}
+                    alt="Slip"
+                    className="max-h-32 rounded-xl border border-white/10"
+                  />
+                </a>
+              </div>
+            </div>
+          )}
           {editingOrder && (
             <div>
               <div className="text-xs font-semibold text-white/70">Ordered Items</div>
@@ -1116,19 +1159,32 @@ export function AdminPage(props: {
   function OrderRow({ o }: { o: Order }) {
     const [status, setStatus] = useState<Order["status"]>(o.status);
     const [tracking, setTracking] = useState(o.trackingNumber ?? "");
+    const [digitalCreds, setDigitalCreds] = useState(o.digitalCredentials ?? "");
     const [saving, setSaving] = useState(false);
+
+    const isDigitalOrder = useMemo(() => {
+      return o.items.some((item) => {
+        const p = props.products.find((prod) => prod.id === item.productId);
+        return p?.isDigital === true;
+      });
+    }, [o.items]);
 
     async function save() {
       setSaving(true);
       try {
-        await updateOrderStatus(o.id, status, tracking);
+        await updateOrder(o.id, {
+          status,
+          trackingNumber: tracking,
+          digitalCredentials: digitalCreds,
+        });
         toast.success("Order updated");
         // Notify customer
         if (o.phone) {
-          wa(o.phone, `Your order ${o.id} status is now: ${status}. Tracking: ${tracking || "N/A"}`);
+          const digitalMsg = digitalCreds ? `. Digital details: ${digitalCreds}` : "";
+          wa(o.phone, `Your order ${o.id} status is now: ${status}. Tracking: ${tracking || "N/A"}${digitalMsg}`);
         }
         // Simulate email
-        console.log("[EMAIL] Order updated", { orderId: o.id, status, tracking, email: o.email });
+        console.log("[EMAIL] Order updated", { orderId: o.id, status, tracking, digitalCredentials: digitalCreds, email: o.email });
       } catch (e: any) {
         toast.error(e?.message ?? "Failed");
       } finally {
@@ -1161,6 +1217,29 @@ export function AdminPage(props: {
         </td>
         <td className="text-white/70">
           <Input value={tracking} onChange={setTracking} placeholder="Tracking number" />
+          {o.paymentMethod === "Bank Transfer" && o.bankTransferSlip && (
+            <div className="mt-1">
+              <a
+                href={o.bankTransferSlip}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-1 rounded bg-[#00b4d8]/10 px-1.5 py-0.5 text-[10px] font-semibold text-[#00b4d8] hover:bg-[#00b4d8]/20 transition"
+              >
+                View Slip ↗
+              </a>
+            </div>
+          )}
+        </td>
+        <td className="text-white/70">
+          {isDigitalOrder ? (
+            <Input
+              value={digitalCreds}
+              onChange={setDigitalCreds}
+              placeholder="Credentials/Keys"
+            />
+          ) : (
+            <span className="text-white/20 text-xs">N/A</span>
+          )}
         </td>
         <td className="py-2 text-right">
           <div className="inline-flex gap-2">

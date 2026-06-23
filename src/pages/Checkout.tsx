@@ -6,7 +6,7 @@ import { cartSubtotal, computeDiscount } from "@/lib/cart";
 import type { PayHereSettings, PayzySettings, SiteSettings, Product } from "@/lib/types";
 import type { UserProfile } from "@/lib/firebase";
 import { Button, Card, Container, Divider, Input, Textarea } from "@/components/ui";
-import { createOrder } from "@/lib/api";
+import { createOrder, uploadPaymentSlip } from "@/lib/api";
 import toast from "react-hot-toast";
 import { submitPayHerePayment } from "@/lib/payhere";
 import { submitPayzyPayment } from "@/lib/payzy";
@@ -27,6 +27,7 @@ type Placed = {
   total: number;
   paymentMethod: string;
   items: { name: string; qty: number; price: number }[];
+  bankTransferSlip?: string;
 };
 
 export function CheckoutPage(props: {
@@ -47,6 +48,28 @@ export function CheckoutPage(props: {
   const [zip, setZip] = useState("");
   const [notes, setNotes] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [slipUrl, setSlipUrl] = useState("");
+  const [uploadingSlip, setUploadingSlip] = useState(false);
+
+  async function handleSlipUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please upload an image file (PNG/JPG)");
+      return;
+    }
+    setUploadingSlip(true);
+    try {
+      const url = await uploadPaymentSlip(file);
+      setSlipUrl(url);
+      toast.success("Payment slip uploaded successfully!");
+    } catch (err: any) {
+      console.error(err);
+      toast.error(err?.message ?? "Failed to upload payment slip");
+    } finally {
+      setUploadingSlip(false);
+    }
+  }
 
   const isDigitalCart = useMemo(() => {
     if (!props.cart.items.length) return false;
@@ -105,6 +128,10 @@ export function CheckoutPage(props: {
       toast.error("Please fill all required fields");
       return;
     }
+    if (paymentMethod === "Bank Transfer" && !slipUrl) {
+      toast.error("Please upload your bank transfer payment slip to place the order");
+      return;
+    }
 
     setSubmitting(true);
     try {
@@ -128,6 +155,7 @@ export function CheckoutPage(props: {
         zip: isDigitalCart ? "" : zip,
         paymentMethod,
         notes,
+        bankTransferSlip: paymentMethod === "Bank Transfer" ? slipUrl : undefined,
       };
 
       const orderId = await createOrder(orderPayload);
@@ -144,6 +172,7 @@ export function CheckoutPage(props: {
         total,
         paymentMethod,
         items: itemsCopy,
+        bankTransferSlip: paymentMethod === "Bank Transfer" ? slipUrl : undefined,
       });
 
       // Clear cart immediately
@@ -210,13 +239,17 @@ export function CheckoutPage(props: {
   // ── Success screen ──────────────────────────────────────────────────────────
   if (placed) {
     const adminPhone = toWaPhone(props.settings.phone || "0726306039");
+    const slipLine = placed.paymentMethod === "Bank Transfer" && placed.bankTransferSlip
+      ? `Payment Slip: ${placed.bankTransferSlip}\n`
+      : "";
     const waText = encodeURIComponent(
       `Hi SR MOBILE! I just placed an order.\n\n` +
         `Order ID: ${placed.orderId}\n` +
         `Name: ${placed.customerName}\n` +
         `Total: Rs. ${placed.total.toLocaleString()}\n` +
-        `Payment: ${placed.paymentMethod}\n\n` +
-        `Items:\n` +
+        `Payment: ${placed.paymentMethod}\n` +
+        slipLine +
+        `\nItems:\n` +
         placed.items.map((i) => `• ${i.qty}× ${i.name} — Rs. ${(i.qty * i.price).toLocaleString()}`).join("\n") +
         `\n\nPlease confirm my order. Thank you!`
     );
@@ -415,8 +448,51 @@ export function CheckoutPage(props: {
                   </div>
 
                   <p className="text-xs text-white/40">
-                    After transferring, please send your payment slip via WhatsApp to confirm your order.
+                    After transferring, please upload your payment slip below and send your order details via WhatsApp to confirm your order.
                   </p>
+
+                  <Divider className="my-2 border-white/5" />
+
+                  <div className="space-y-2">
+                    <div className="text-xs font-semibold text-white/70">Upload Payment Slip (Receipt) *</div>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      id="slip-upload"
+                      className="hidden"
+                      onChange={handleSlipUpload}
+                      disabled={uploadingSlip}
+                    />
+                    <label
+                      htmlFor="slip-upload"
+                      className={`flex cursor-pointer items-center justify-center gap-2 rounded-xl border border-dashed border-white/20 bg-white/[0.02] p-4 text-sm text-white/60 hover:bg-white/[0.05] transition ${
+                        uploadingSlip ? "opacity-50 cursor-wait" : ""
+                      }`}
+                    >
+                      {uploadingSlip ? (
+                        <span>Uploading slip...</span>
+                      ) : slipUrl ? (
+                        <span className="text-emerald-400 font-semibold flex items-center gap-1">
+                          Slip Uploaded ✓
+                        </span>
+                      ) : (
+                        <span>Choose Slip Image</span>
+                      )}
+                    </label>
+                    {slipUrl && (
+                       <div className="mt-2 relative inline-block">
+                         <img src={slipUrl} alt="Slip Preview" className="max-h-24 rounded-lg border border-white/10" />
+                         <button
+                           type="button"
+                           onClick={() => setSlipUrl("")}
+                           className="absolute -top-1.5 -right-1.5 bg-red-500 hover:bg-red-600 text-white rounded-full p-0.5 h-5 w-5 flex items-center justify-center text-[10px]"
+                           title="Remove slip"
+                         >
+                           ✕
+                         </button>
+                       </div>
+                    )}
+                  </div>
                 </div>
               )}
 

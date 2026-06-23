@@ -47,6 +47,7 @@ export type Order = {
   paymentMethod: "Card" | "Cash on Delivery" | "Bank Transfer" | "PayHere" | "Payzy";
   notes: string;
   digitalCredentials?: string;
+  bankTransferSlip?: string;
 };
 
 export type Testimonial = {

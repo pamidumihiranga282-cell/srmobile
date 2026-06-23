@@ -64,11 +64,18 @@ const STATUS_CONFIG: Record<
   },
 };
 
-function OrderCard({ o, adminPhone }: { o: Order; adminPhone: string }) {
+function OrderCard({ o, adminPhone, products }: { o: Order; adminPhone: string; products: Product[] }) {
   const [expanded, setExpanded] = useState(false);
   const [copied, setCopied] = useState(false);
   const st = STATUS_CONFIG[o.status] ?? STATUS_CONFIG.pending;
   const StatusIcon = st.Icon;
+
+  const isDigitalOrder = useMemo(() => {
+    return o.items.some((item) => {
+      const p = products.find((prod) => prod.id === item.productId);
+      return p?.isDigital === true;
+    });
+  }, [o.items, products]);
 
   function handleCopy() {
     if (!o.digitalCredentials) return;
@@ -114,6 +121,19 @@ function OrderCard({ o, adminPhone }: { o: Order; adminPhone: string }) {
             </div>
             <div className="mt-0.5 text-xs text-white/50">
               {o.paymentMethod}
+            </div>
+            <div className="mt-2 flex flex-wrap gap-2">
+              {isDigitalOrder && o.digitalCredentials && (
+                <span className="inline-flex items-center gap-1 rounded-full bg-cyan-500/10 border border-cyan-500/30 px-2 py-0.5 text-[10px] font-medium text-[#00b4d8]">
+                  <Key className="h-3 w-3" />
+                  Digital Details Ready
+                </span>
+              )}
+              {o.paymentMethod === "Bank Transfer" && o.bankTransferSlip && (
+                <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 px-2 py-0.5 text-[10px] font-medium text-emerald-400">
+                  Payment Slip Uploaded
+                </span>
+              )}
             </div>
           </div>
 
@@ -216,6 +236,26 @@ function OrderCard({ o, adminPhone }: { o: Order; adminPhone: string }) {
                     <pre className="mt-2 whitespace-pre-wrap rounded bg-black/30 p-2 font-mono text-xs text-white/90">
                       {o.digitalCredentials}
                     </pre>
+                  </div>
+                )}
+                {isDigitalOrder && !o.digitalCredentials && (
+                  <div className="col-span-2 mt-2 rounded-xl border border-amber-500/20 bg-amber-500/5 p-3">
+                    <div className="flex items-center gap-2 text-xs font-semibold text-amber-400">
+                      <Key className="h-4 w-4" />
+                      <span>Digital Product details will be provided by Admin soon.</span>
+                    </div>
+                  </div>
+                )}
+                {o.paymentMethod === "Bank Transfer" && o.bankTransferSlip && (
+                  <div className="col-span-2 mt-2">
+                    <div className="text-white/40 text-xs font-semibold">Payment Slip</div>
+                    <a href={o.bankTransferSlip} target="_blank" rel="noreferrer" className="inline-block mt-1.5 hover:opacity-90 transition">
+                      <img
+                        src={o.bankTransferSlip}
+                        alt="Payment Slip"
+                        className="max-h-36 rounded-xl border border-white/10"
+                      />
+                    </a>
                   </div>
                 )}
               </div>
@@ -364,7 +404,7 @@ export function AccountPage(props: {
               ) : (
                 <div className="space-y-3">
                   {props.orders.map((o) => (
-                    <OrderCard key={o.id} o={o} adminPhone={props.adminPhone} />
+                    <OrderCard key={o.id} o={o} adminPhone={props.adminPhone} products={props.products} />
                   ))}
                 </div>
               )}

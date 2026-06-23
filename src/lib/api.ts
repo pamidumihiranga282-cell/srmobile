@@ -160,6 +160,13 @@ export async function uploadProductImages(productId: string, files: File[]) {
   return urls;
 }
 
+export async function uploadPaymentSlip(file: File): Promise<string> {
+  const path = `slips/${Date.now()}_${file.name}`;
+  const r = ref(storage, path);
+  await uploadBytes(r, file);
+  return getDownloadURL(r);
+}
+
 export async function addMessage(fromEmail: string, message: string) {
   await addDoc(collection(db, "messages"), { fromEmail, message, date: serverTimestamp() });
 }
