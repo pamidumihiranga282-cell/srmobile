@@ -120,6 +120,7 @@ export function AdminPage(props: {
   const [pFiles, setPFiles] = useState<File[]>([]);
   const [pImages, setPImages] = useState<string[]>([]);
   const [pIsDigital, setPIsDigital] = useState(false);
+  const [pSaving, setPSaving] = useState(false);
 
   const dynamicCategories = useMemo(() => {
     const defaults = ["Screen", "Battery", "Accessories", "Repair Tools", "Charging", "Unlock Tools on Rent"];
@@ -243,8 +244,16 @@ export function AdminPage(props: {
   }
 
   async function saveProduct() {
+    if (pSaving) return;
     try {
       if (!pName.trim()) return toast.error("Name required");
+      if (!pPartType.trim()) return toast.error("Category required");
+
+      setPSaving(true);
+
+      let productId = editing?.id;
+
+      // Step 1: Create or update product (with existing images already)
       const payload = {
         name: pName.trim(),
         brand: pBrand.trim(),
@@ -263,24 +272,37 @@ export function AdminPage(props: {
         isDigital: pIsDigital,
       } as any;
 
-      let productId = editing?.id;
       if (!productId) {
         productId = await createProduct(payload);
       } else {
         await updateProduct(productId, payload);
       }
 
+      // Step 2: Upload new image files and merge with existing
       if (pFiles.length) {
-        const urls = await uploadProductImages(productId, pFiles);
-        const merged = [...pImages, ...urls];
-        await updateProduct(productId, { images: merged } as any);
+        const toastId = toast.loading("Uploading images...");
+        try {
+          const urls = await uploadProductImages(productId, pFiles);
+          const merged = [...pImages, ...urls];
+          await updateProduct(productId, { images: merged } as any);
+          toast.dismiss(toastId);
+        } catch (uploadErr: any) {
+          toast.dismiss(toastId);
+          console.error("Image upload error:", uploadErr);
+          toast.error("Product saved but image upload failed: " + (uploadErr?.message ?? "Check Firebase Storage rules."));
+          setPSaving(false);
+          setProductOpen(false);
+          return;
+        }
       }
 
-      toast.success(editing ? "Product updated" : "Product created");
+      toast.success(editing ? "Product updated" : "Product created!");
       setProductOpen(false);
     } catch (e: any) {
       console.error("Error saving product:", e);
       toast.error(e?.message ?? "Failed to save product");
+    } finally {
+      setPSaving(false);
     }
   }
 
@@ -973,10 +995,12 @@ export function AdminPage(props: {
           )}
 
           <div className="flex justify-end gap-2 pt-2">
-            <Button variant="secondary" onClick={() => setProductOpen(false)}>
+            <Button variant="secondary" onClick={() => !pSaving && setProductOpen(false)} disabled={pSaving}>
               Cancel
             </Button>
-            <Button onClick={saveProduct}>Save</Button>
+            <Button onClick={saveProduct} disabled={pSaving}>
+              {pSaving ? "Saving..." : "Save Product"}
+            </Button>
           </div>
         </div>
       </Modal>

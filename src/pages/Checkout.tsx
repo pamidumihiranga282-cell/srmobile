@@ -378,6 +378,48 @@ export function CheckoutPage(props: {
                 </div>
               </label>
 
+              {paymentMethod === "Bank Transfer" && (
+                <div className="rounded-2xl border border-[#00b4d8]/30 bg-[#00b4d8]/5 p-4 space-y-4">
+                  <div className="text-xs font-bold text-[#00b4d8] uppercase tracking-wider mb-2">Bank Account Details</div>
+
+                  {/* Account 1 */}
+                  <div className="rounded-xl border border-white/10 bg-white/[0.04] p-3 space-y-1.5">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-white/50">Bank</span>
+                      <span className="text-sm font-bold text-white">HNB</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-white/50">Account Name</span>
+                      <span className="text-sm font-semibold text-white">SR MOBILE</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-white/50">Account Number</span>
+                      <span className="font-mono text-sm font-bold text-[#00b4d8] select-all">202020083890</span>
+                    </div>
+                  </div>
+
+                  {/* Account 2 */}
+                  <div className="rounded-xl border border-white/10 bg-white/[0.04] p-3 space-y-1.5">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-white/50">Bank</span>
+                      <span className="text-sm font-bold text-white">HNB</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-white/50">Account Name</span>
+                      <span className="text-sm font-semibold text-white">S. Rashmika</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-white/50">Account Number</span>
+                      <span className="font-mono text-sm font-bold text-[#00b4d8] select-all">081020281103</span>
+                    </div>
+                  </div>
+
+                  <p className="text-xs text-white/40">
+                    After transferring, please send your payment slip via WhatsApp to confirm your order.
+                  </p>
+                </div>
+              )}
+
               {/* Card */}
               {!isDigitalCart && (
                 <label className="flex cursor-pointer items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.03] p-3 transition hover:bg-white/[0.06]">
